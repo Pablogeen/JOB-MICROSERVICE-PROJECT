@@ -1,0 +1,28 @@
+meta {
+  name: Add Job
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:5050/job
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title":"Business Analyst",
+    "description":"Analyse business treats and opportunites and create simless ways to solve it",
+    "minSalary":"2000",
+    "maxSalary":"4000",
+    "location":"My House",
+    "companyId":2
+  }
+  
+  
+}
+
+settings {
+  encodeUrl: true
+}

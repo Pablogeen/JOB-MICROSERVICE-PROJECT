@@ -1,0 +1,22 @@
+meta {
+  name: Add Company
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:5051/company
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name":"OpenAI",
+    "description":"Aritificial Intelligence to the next level"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

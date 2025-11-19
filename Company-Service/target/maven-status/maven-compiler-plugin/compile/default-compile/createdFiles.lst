@@ -1,0 +1,6 @@
+Company\Company$CompanyBuilder.class
+Company\CompanyApplication.class
+Company\CompanyService.class
+Company\Company.class
+Company\CompanyRepository.class
+Company\CompanyController.class

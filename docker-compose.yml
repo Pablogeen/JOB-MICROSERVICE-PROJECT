@@ -1,0 +1,17 @@
+
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "7079:7079"`
+
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_USER: rey
+      MYSQL_PASSWORD: rey
+      MYSQL_DB: mysql
+      ports:
+        -3309:3309

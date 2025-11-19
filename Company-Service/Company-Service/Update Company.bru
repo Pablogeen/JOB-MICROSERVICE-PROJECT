@@ -1,0 +1,22 @@
+meta {
+  name: Update Company
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:5051/company/2
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name":"Meta",
+    "description":"We making your social life very interesting and educative"
+  }
+}
+
+settings {
+  encodeUrl: true
+}
