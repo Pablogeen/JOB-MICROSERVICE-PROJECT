@@ -5,9 +5,22 @@ meta {
 }
 
 post {
-  url: 
-  body: none
+  url: http://localhost:5052/v1/reviews/add-review?companyId=1
+  body: json
   auth: inherit
+}
+
+params:query {
+  companyId: 1
+}
+
+body:json {
+  {
+    "title":"Hello World",
+    "description":"The world is full of hellos",
+    "rating":5,
+    "companyId":1
+  }
 }
 
 settings {
