@@ -1,9 +1,10 @@
 package com.rey.company.Controller;
 
+import com.rey.company.DTO.CompanyDTO;
+import com.rey.company.Service.ServiceInterface;
 import com.rey.company.ServiceImpl.CompanyServiceImpl;
-import com.rey.company.Entity.Company;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,35 +12,51 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/company")
+@RequestMapping("/v1/companies")
 @RequiredArgsConstructor
+@Slf4j
 public class CompanyController {
 
-    private CompanyServiceImpl service;
+    private final ServiceInterface serviceInterface;
+    private final CompanyServiceImpl service;
 
 
     @GetMapping
-    public ResponseEntity<List<Company>> getAllCompanies(){
-        return new ResponseEntity<>(service.getAllCompanies(), HttpStatus.OK);
+    public ResponseEntity<List<CompanyDTO>> getAllCompanies(){
+        log.info("Retrieving all companies");
+       List<CompanyDTO> companies = serviceInterface.getAllCompanies();
+       log.info("Retrieved all companies: {}", companies);
+        return new ResponseEntity<>(companies, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Company> getCompanyById(@PathVariable("id") Long id){
-        return new ResponseEntity<>(service.getCompanyById(id), HttpStatus.OK);
+    public ResponseEntity<CompanyDTO> getCompanyById(@PathVariable("id") Long id){
+        log.info("Getting company with id: {}", id);
+        CompanyDTO company = serviceInterface.getCompanyById(id);
+        return new ResponseEntity<>(company, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateCompany(@PathVariable("id") Long id, @RequestBody Company company){
-        return new ResponseEntity<>(service.updateCompany(id, company), HttpStatus.OK);
+    public ResponseEntity<CompanyDTO> updateCompany(@PathVariable("id") Long id,
+                                                    @RequestBody CompanyDTO company){
+        log.info("About to update company with id: {}", id);
+        CompanyDTO updatedCompany = serviceInterface.updateCompany(id, company);
+        log.info("Company has been updated: {}", updatedCompany);
+        return new ResponseEntity<>(updatedCompany, HttpStatus.OK);
     }
 
-    @PostMapping
-    public ResponseEntity<String> createCompany(@RequestBody Company company){
-        return new ResponseEntity<>(service.createCompany(company), HttpStatus.CREATED);
+    @PostMapping("add-company")
+    public ResponseEntity<String> createCompany(@RequestBody CompanyDTO company){
+        log.info("Request to create a company: {}",company);
+        String creationResponse = serviceInterface.createCompany(company);
+        log.info("Company has been created");
+        return new ResponseEntity<>(creationResponse, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCompany(@PathVariable("id") Long id){
-        return new ResponseEntity<>(service.deleteCompany(id), HttpStatus.NO_CONTENT);
+        log.info("About to delete company with id: {}",id);
+        String deletedResponse = serviceInterface.deleteCompany(id);
+        return new ResponseEntity<>(deletedResponse, HttpStatus.NO_CONTENT);
     }
 }
