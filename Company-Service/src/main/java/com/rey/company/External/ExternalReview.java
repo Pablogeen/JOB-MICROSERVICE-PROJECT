@@ -1,4 +1,4 @@
-package com.rey.job.External;
+package com.rey.company.External;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;

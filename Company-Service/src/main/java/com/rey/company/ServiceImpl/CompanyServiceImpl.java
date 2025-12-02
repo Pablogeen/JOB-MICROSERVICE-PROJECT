@@ -1,5 +1,6 @@
 package com.rey.company.ServiceImpl;
 
+import com.rey.company.Clients.JobClient;
 import com.rey.company.Clients.ReviewClient;
 import com.rey.company.DTO.CompanyDTO;
 import com.rey.company.DTO.ErrorCodeEnum;
@@ -7,7 +8,9 @@ import com.rey.company.DTO.ReviewMessage;
 
 import com.rey.company.Entity.Company;
 import com.rey.company.Exception.CompanyServiceException;
+import com.rey.company.External.ExternalReview;
 import com.rey.company.Helper.CompanyHelper;
+import com.rey.company.Helper.ExternalClientHelper;
 import com.rey.company.Repository.CompanyRepository;
 import com.rey.company.Service.ServiceInterface;
 import lombok.AllArgsConstructor;
@@ -16,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,6 +32,7 @@ public class CompanyServiceImpl implements ServiceInterface {
     private final ReviewClient reviewClient;
     private final ModelMapper modelMapper;
     private final CompanyHelper companyHelper;
+    private final ExternalClientHelper clientHelper;
 
     @Override
     public List<CompanyDTO> getAllCompanies() {
@@ -105,8 +110,17 @@ public class CompanyServiceImpl implements ServiceInterface {
     }
 
     @Override
-    public String deleteCompany(Long id) {
-        Company existingCompany = companyRepo.findById(id)
+    @Transactional
+    public String deleteCompany(Long companyId) {
+        log.info("About to make call to delete reviews with companyId: {}",companyId);
+        clientHelper.makeDeleteReviewCall(companyId);
+        log.info("Reviews deleted with companyId: {}",companyId);
+
+        log.info("About to make call to delete Job with companyId: {}",companyId);
+        clientHelper.makeDeleteJobsCall(companyId);
+        log.info("Jobs deleted with companyId: {}",companyId);
+
+        Company existingCompany = companyRepo.findById(companyId)
                 .orElseThrow(()-> new CompanyServiceException(
                         ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorCode(),
                         ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorMessage(),

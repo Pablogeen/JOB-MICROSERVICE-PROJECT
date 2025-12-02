@@ -45,7 +45,7 @@ public class CompanyController {
         return new ResponseEntity<>(updatedCompany, HttpStatus.OK);
     }
 
-    @PostMapping("add-company")
+    @PostMapping("/add")
     public ResponseEntity<String> createCompany(@RequestBody CompanyDTO company){
         log.info("Request to create a company: {}",company);
         String creationResponse = serviceInterface.createCompany(company);
@@ -53,10 +53,10 @@ public class CompanyController {
         return new ResponseEntity<>(creationResponse, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCompany(@PathVariable("id") Long id){
-        log.info("About to delete company with id: {}",id);
-        String deletedResponse = serviceInterface.deleteCompany(id);
+    @DeleteMapping("/{companyId}")
+    public ResponseEntity<String> deleteCompany(@PathVariable("companyId") Long companyId){
+        log.info("About to delete company with id: {}",companyId);
+        String deletedResponse = serviceInterface.deleteCompany(companyId);
         return new ResponseEntity<>(deletedResponse, HttpStatus.NO_CONTENT);
     }
 }

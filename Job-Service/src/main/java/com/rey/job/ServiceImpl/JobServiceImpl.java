@@ -1,5 +1,12 @@
 package com.rey.job.ServiceImpl;
 
+import com.rey.job.Constants.ErrorCodeEnum;
+import com.rey.job.DTO.JobDTO;
+import com.rey.job.Exception.JobExceptionHandler;
+import com.rey.job.Helper.CreateJobHelper;
+import com.rey.job.Helper.ExternalClients;
+import com.rey.job.Util.JsonUtil;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import com.rey.job.Client.CompanyClient;
 import com.rey.job.Client.ReviewClient;
@@ -10,9 +17,13 @@ import com.rey.job.External.ExternalReview;
 import com.rey.job.Mapper.JobMapper;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.rey.job.Repository.JobRepository;
 import com.rey.job.ServiceInterface.JobService;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,34 +34,42 @@ import java.util.List;
 public class JobServiceImpl implements JobService {
 
     private final JobRepository repo;
-    private final CompanyClient companyClient;
-    private final ReviewClient reviewClient;
+
+    private final ModelMapper modelMapper;
+    private final CreateJobHelper jobHelper;
+    private final ExternalClients externalClients;
+    private final JsonUtil jsonUtil;
 
     @Override
     public List<JobCompanyReviewDTO> getAllJobsWithCompanyAndReview() {
         List<Job> jobs = repo.findAll();
         List<JobCompanyReviewDTO> dto = new ArrayList<>();
         for (Job job: jobs){
+            log.info("Job with company id: {}",job.getCompanyId());
 
-            ExternalCompany company =
-                    companyClient.getCompany(job.getCompanyId());
-            log.info("Job with Company id: {} fetched", job.getCompanyId());
+          ResponseEntity<ExternalCompany> company =
+                  externalClients.makeCompanyCall(job);
+          log.info("Made company request from Company Service: {}",company);
 
-            List<ExternalReview> reviews =
-                    reviewClient.getReviews(job.getCompanyId());
-            log.info("Reviews found with id: {}", job.getCompanyId());
+            ExternalCompany externalCompany = company.getBody();
+
+
+
+            ResponseEntity<List<ExternalReview>> reviews =
+                    externalClients.makeReviewCall(job);
+            log.info("Made Review request from Review Service: {}",reviews);
+
+            List<ExternalReview> externalReview = reviews.getBody();
 
             JobCompanyReviewDTO jobDTO =
-                    JobMapper.mapToJobWithCompanyDto(job, company, reviews);
+                    JobMapper.mapToJobWithCompanyDto(job, externalCompany, externalReview);
 
             dto.add(jobDTO);
         }
         return dto;
     }
 
-    int attempt;
 
-      //@CircuitBreaker(name="companyBreaker", fallbackMethod = "companyBreakerFallback")
   //@Retry(name="companyBreaker", fallbackMethod = "companyBreakerFallback")
   //  @RateLimiter(name="companyBreaker")
 
@@ -65,59 +84,105 @@ public class JobServiceImpl implements JobService {
 
 
 
-@RateLimiter(name = "companyBreaker")
-    public String createJob(Job job){
-        repo.save(job);
-        log.info("Job created successfully");
+//@RateLimiter(name = "companyBreaker")
+    @Override
+    public String createJob(JobDTO jobDTO){
+        log.info("JobDTO received successfully in serviceImpl: {}",jobDTO);
+        jobHelper.validateRequest(jobDTO);
+        log.info("Validated job request");
+    Job job =  modelMapper.map(jobDTO, Job.class);
+    log.info("JobDTO mapped to JOB: {}",job);
+    repo.save(job);
+    log.info("Job saved into the database");
         return "JOB ADDED SUCCESSFULLY";
     }
 
-    public JobCompanyReviewDTO findById(Long id) {
+    @Override
+   public JobCompanyReviewDTO findById(Long id) {
+
         Job job = repo.findById(id)
-                .orElseThrow(() -> new IllegalStateException("JOB NOT  FOUND"));
+                .orElseThrow(() -> new JobExceptionHandler(
+                                ErrorCodeEnum.JOB_NOT_FOUND.getErrorCode(),
+                            ErrorCodeEnum.JOB_NOT_FOUND.getErrorMessage(),
+                                HttpStatus.NOT_FOUND
+                        ));
+        log.info("Fetching job from the db: {}",job);
 
-        ExternalCompany company
-                = companyClient.getCompany(job.getCompanyId());
-     List<ExternalReview> reviews =
-             reviewClient.getReviews(job.getCompanyId());
+        ResponseEntity<ExternalCompany> company
+                = externalClients.makeCompanyCall(job);
+        log.info("Making company request from Company Service: {}",company);
 
-     JobCompanyReviewDTO jobDTO = new JobCompanyReviewDTO();
-     jobDTO.setId(job.getId());
-     jobDTO.setTitle(job.getTitle());
-     jobDTO.setDescription(job.getDescription());
-     jobDTO.setLocation(job.getLocation());
-     jobDTO.setMaxSalary(job.getMaxSalary());
-     jobDTO.setMinSalary(job.getMinSalary());
-        jobDTO.setCompany(company);
-     jobDTO.setReview(reviews);
+        ExternalCompany convertedCompany = company.getBody();
 
+     ResponseEntity<List<ExternalReview>> reviews =
+             externalClients.makeReviewCall(job);
+        log.info("Making review request from Review Service: {}",reviews);
 
-//        JobDTO jobDTO =
-//                JobMapper.mapToJobWithCompanyDto(job, company, reviews);
+        List<ExternalReview> convertedReview = reviews.getBody();
+
+        JobCompanyReviewDTO jobDTO =
+                JobMapper.mapToJobWithCompanyDto(job, convertedCompany, convertedReview);
+        log.info("Mapped job, company and convertedReview: {}",jobDTO);
 
         return jobDTO;
     }
 
+    @Override
         public String deleteJobById(Long id){
-         Job job = repo.findById(id)
-                 .orElseThrow(()-> new IllegalStateException("JOB NOT FOUND"));
+
+        Job job = repo.findById(id)
+                .orElseThrow(() -> new JobExceptionHandler(
+                        ErrorCodeEnum.JOB_NOT_FOUND.getErrorCode(),
+                        ErrorCodeEnum.JOB_NOT_FOUND.getErrorMessage(),
+                        HttpStatus.NOT_FOUND
+                ));
+        log.info("Fetched job from the db: {}",job);
+
           repo.delete(job);
           return "JOB DELETED SUCCESSFULLY";
         }
 
-    public String updateJob(Long id, Job job) {
-        Job existingJob = repo.findById(id)
-                .orElseThrow(()-> new IllegalStateException("JOB NOT FOUND"));
+    @Override
+    @Transactional
+    public String deleteJobsByCompanyId(Long companyId) {
+            repo.findAllJobsByCompanyId(companyId)
+                    .orElseThrow(() -> new JobExceptionHandler(
+                            ErrorCodeEnum.JOB_NOT_FOUND.getErrorCode(),
+                            ErrorCodeEnum.JOB_NOT_FOUND.getErrorMessage(),
+                            HttpStatus.NOT_FOUND
+                    ));
+            log.info("Fetched jobs with companyId: {} from DB",companyId);
 
-        existingJob.setTitle(job.getTitle());
-        existingJob.setDescription(job.getDescription());
-        existingJob.setMaxSalary(job.getMaxSalary());
-        existingJob.setMinSalary(job.getMinSalary());
-        existingJob.setLocation(job.getLocation());
+            repo.deleteAllByCompanyId(companyId);
+            log.info("All jobs with companyId: {} deleted", companyId);
+
+        return "JOBS DELETED SUCCESSFULLY";
+    }
+
+
+    @Override
+    public String updateJob(Long id, JobDTO jobDto) {
+            Job existingJob = repo.findById(id)
+                    .orElseThrow(() -> new JobExceptionHandler(
+                            ErrorCodeEnum.JOB_NOT_FOUND.getErrorCode(),
+                            ErrorCodeEnum.JOB_NOT_FOUND.getErrorMessage(),
+                            HttpStatus.NOT_FOUND
+                    ));
+            log.info("Got job from the DB: {}",existingJob);
+
+            jobHelper.validateRequest(jobDto);
+            log.info("Validating user request");
+
+        existingJob.setTitle(jobDto.getTitle());
+        existingJob.setDescription(jobDto.getDescription());
+        existingJob.setMaxSalary(jobDto.getMaxSalary());
+        existingJob.setMinSalary(jobDto.getMinSalary());
+        existingJob.setLocation(jobDto.getLocation());
          repo.save(existingJob);
          return "JOB UPDATED SUCCESSFULLY";
 
     }
+
 
 
 }

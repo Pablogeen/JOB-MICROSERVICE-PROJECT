@@ -16,4 +16,6 @@ public interface ServiceInterface {
     String deleteReview(Long reviewId);
 
     Double getAverageRating(Long companyId);
+
+    String deleteReviewsByCompanyId(Long companyId);
 }

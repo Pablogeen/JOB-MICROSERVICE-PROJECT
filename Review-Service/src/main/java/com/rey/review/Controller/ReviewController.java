@@ -3,9 +3,7 @@ package com.rey.review.Controller;
 import com.rey.review.DTO.ReviewDTO;
 import com.rey.review.Interface.ServiceInterface;
 import com.rey.review.Messaging.ReviewMessageProducer;
-import com.rey.review.Entity.Review;
-import com.rey.review.ServiceImpl.ReviewServiceImpl;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +14,9 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/v1/reviews")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ReviewController {
 
-     private ReviewServiceImpl service;
      private final ServiceInterface serviceInterface;
      private ReviewMessageProducer messageProducer;
 
@@ -51,7 +48,8 @@ public class ReviewController {
     }
 
     @PutMapping("/{reviewId}")
-    public ResponseEntity<ReviewDTO> updateReview(@PathVariable("reviewId") Long reviewId, @RequestBody ReviewDTO review){
+    public ResponseEntity<ReviewDTO> updateReview(@PathVariable("reviewId") Long reviewId,
+                                                  @RequestBody ReviewDTO review){
         log.info("About to update review with id and ReviewDTO {}||{}", reviewId, review);
         ReviewDTO updatedReview = serviceInterface.updateReview(reviewId, review);
         return new ResponseEntity<>(updatedReview, HttpStatus.OK);
@@ -62,6 +60,14 @@ public class ReviewController {
         log.info("Received reviewId to deleteReview: {}",reviewId);
         String deletedReview = serviceInterface.deleteReview(reviewId);
         log.info("Deleted review with id: {}", reviewId);
+        return new ResponseEntity<>(deletedReview, HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping("/company/{companyId}")
+    public ResponseEntity<String> deleteReviewsByCompanyId(@PathVariable("companyId") Long companyId){
+        log.info("Received companyId to deleteReview: {}",companyId);
+        String deletedReview = serviceInterface.deleteReviewsByCompanyId(companyId);
+        log.info("Deleted review with companyId: {}", companyId);
         return new ResponseEntity<>(deletedReview, HttpStatus.NO_CONTENT);
     }
 

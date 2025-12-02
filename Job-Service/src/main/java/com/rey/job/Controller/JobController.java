@@ -1,13 +1,13 @@
 package com.rey.job.Controller;
 
 import com.rey.job.DTO.JobCompanyReviewDTO;
+import com.rey.job.DTO.JobDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.rey.job.Entity.Job;
-import com.rey.job.ServiceImpl.JobServiceImpl;
 import com.rey.job.ServiceInterface.JobService;
 
 import java.util.List;
@@ -19,7 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JobController {
 
-    private final JobServiceImpl service;
     private final JobService jobService;
 
     @GetMapping
@@ -31,22 +30,42 @@ public class JobController {
     }
 
     @PostMapping
-    public ResponseEntity<String> postJob(@RequestBody Job job) {
-        return new ResponseEntity<>(service.createJob(job), HttpStatus.CREATED);
+    public ResponseEntity<String> postJob(@RequestBody JobDTO jobDTO) {
+        log.info("Received request to post Job: {}",jobDTO);
+        String jobResponse = jobService.createJob(jobDTO);
+        log.info("Return response from job posted");
+        return new ResponseEntity<>(jobResponse, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<JobCompanyReviewDTO> findById(@PathVariable Long id) {
-        return new ResponseEntity<>(service.findById(id), HttpStatus.OK);
+    public ResponseEntity<JobCompanyReviewDTO> findById(@PathVariable("id") Long id) {
+        log.info("About to make request with id: {}",id);
+        JobCompanyReviewDTO response = jobService.findById(id);
+        log.info("Gotten response from id: {}",response);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteById(@PathVariable Long id) {
-     return new ResponseEntity<>(service.deleteJobById(id), HttpStatus.OK);
+    public ResponseEntity<String> deleteById(@PathVariable("id") Long id) {
+        log.info("Request to delete job with id: {}",id);
+        String response = jobService.deleteJobById(id);
+        log.info("Job Deleted successfully");
+     return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping("/company/{companyId}")
+    public ResponseEntity<String> deleteJobsByCompanyId(@PathVariable("companyId") Long companyId) {
+        log.info("Request to delete job with companyId: {}",companyId);
+        String response = jobService.deleteJobsByCompanyId(companyId);
+        log.info("Jobs with companyId: {} Deleted successfully",companyId);
+        return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
     }
 
     @PutMapping("/{id}")
-        public ResponseEntity<String> updateJob(@PathVariable Long id, @RequestBody Job job){
-          return new ResponseEntity<>(service.updateJob(id, job), HttpStatus.NOT_FOUND);
+        public ResponseEntity<String> updateJob(@PathVariable("id") Long id, @RequestBody JobDTO jobDto){
+        log.info("Updating job with id: {}",id);
+        String updatedResponse = jobService.updateJob(id, jobDto);
+        log.info("Updated Job: {}",jobDto);
+          return new ResponseEntity<>(updatedResponse, HttpStatus.NOT_FOUND);
         }
 }

@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,7 +30,12 @@ public class ReviewServiceImpl implements ServiceInterface {
     public List<ReviewDTO> getAllReviewsByCompanyId(Long companyId) {
 
         List<Review> reviewsByCompanyId =
-                reviewRepo.findReviewsByCompanyId(companyId);
+                reviewRepo.findReviewsByCompanyId(companyId)
+                        .orElseThrow(() -> new ReviewExceptionHandler(
+                                ErrorCodeEnum.REVIEW_NOT_FOUND.getErrorCode(),
+                                ErrorCodeEnum.REVIEW_NOT_FOUND.getErrorMessage(),
+                                HttpStatus.NOT_FOUND
+                        ));
         log.info("Received reviews from the DB: {}", reviewsByCompanyId);
         List<ReviewDTO> reviewDTO =
                 reviewsByCompanyId.stream()
@@ -100,6 +106,7 @@ public class ReviewServiceImpl implements ServiceInterface {
 
 
     @Override
+    @Transactional
     public String deleteReview(Long reviewId) {
         Review rev = reviewRepo.findById(reviewId)
                 .orElseThrow(()-> new ReviewExceptionHandler(
@@ -113,8 +120,32 @@ public class ReviewServiceImpl implements ServiceInterface {
     }
 
     @Override
+    @Transactional
+    public String deleteReviewsByCompanyId(Long companyId) {
+
+        List<Review> review =
+                reviewRepo.findReviewsByCompanyId(companyId)
+                        .orElseThrow(() -> new ReviewExceptionHandler(
+                                ErrorCodeEnum.REVIEW_NOT_FOUND.getErrorCode(),
+                                ErrorCodeEnum.REVIEW_NOT_FOUND.getErrorMessage(),
+                                HttpStatus.NOT_FOUND
+                        ));
+        log.info("Gotten all reviews with companyId: {}",companyId);
+
+        reviewRepo.deleteAllByCompanyId(companyId);
+        log.info("Deleted all reviews with companyId: {}",companyId);
+        return "REVIEWS DELETED SUCCESSFULLY";
+    }
+
+    @Override
     public Double getAverageRating(Long companyId) {
-        List<Review> reviewList = reviewRepo.findReviewsByCompanyId(companyId);
+        List<Review> reviewList =
+                reviewRepo.findReviewsByCompanyId(companyId)
+                        .orElseThrow(() -> new ReviewExceptionHandler(
+                                ErrorCodeEnum.REVIEW_NOT_FOUND.getErrorCode(),
+                                ErrorCodeEnum.REVIEW_NOT_FOUND.getErrorMessage(),
+                                HttpStatus.NOT_FOUND
+                        ));
         log.info("Retrieved reviews by companyId: {}",reviewList);
         return reviewList.stream()
                 .mapToDouble(Review::getRating)
@@ -125,6 +156,8 @@ public class ReviewServiceImpl implements ServiceInterface {
                         HttpStatus.NOT_FOUND
                 ));
     }
+
+
 
 
 }
