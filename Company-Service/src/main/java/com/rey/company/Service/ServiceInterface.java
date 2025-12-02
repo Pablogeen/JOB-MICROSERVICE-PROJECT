@@ -13,5 +13,5 @@ public interface ServiceInterface {
 
     String createCompany(CompanyDTO company);
 
-    String deleteCompany(Long id);
+    String deleteCompany(Long companyId);
 }

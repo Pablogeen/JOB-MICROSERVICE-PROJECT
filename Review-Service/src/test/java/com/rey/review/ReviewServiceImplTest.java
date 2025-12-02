@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -44,14 +45,18 @@ class ReviewServiceImplTest {
     void testGetAllReviewsByCompanyId_success() {
         Long companyId = 1L;
 
+            List<Review> reviewList = new ArrayList<>();
         Review review1 = new Review();
         Review review2 = new Review();
+
+        reviewList.add(review1);
+        reviewList.add(review2);
 
         ReviewDTO dto1 = new ReviewDTO();
         ReviewDTO dto2 = new ReviewDTO();
 
         when(reviewRepo.findReviewsByCompanyId(companyId))
-                .thenReturn(Arrays.asList(review1, review2));
+                .thenReturn(Optional.of(reviewList));
 
         when(modelMapper.map(review1, ReviewDTO.class)).thenReturn(dto1);
         when(modelMapper.map(review2, ReviewDTO.class)).thenReturn(dto2);
@@ -213,14 +218,18 @@ class ReviewServiceImplTest {
     void testGetAverageRating_success() {
         Long companyId = 1L;
 
+        List<Review> reviewList = new ArrayList<>();
         Review r1 = new Review();
         r1.setRating(4.0);
 
         Review r2 = new Review();
         r2.setRating(2.0);
 
+        reviewList.add(r1);
+        reviewList.add(r2);
+
         when(reviewRepo.findReviewsByCompanyId(companyId))
-                .thenReturn(Arrays.asList(r1, r2));
+                .thenReturn(Optional.of(reviewList));
 
         Double avg = reviewService.getAverageRating(companyId);
 
@@ -233,8 +242,10 @@ class ReviewServiceImplTest {
     void testGetAverageRating_notFound() {
         Long companyId = 1L;
 
+        List<Review> reviewList = new ArrayList<>();
+
         when(reviewRepo.findReviewsByCompanyId(companyId))
-                .thenReturn(List.of());
+                .thenReturn(Optional.of(reviewList));
 
         ReviewExceptionHandler ex = assertThrows(
                 ReviewExceptionHandler.class,

@@ -1,6 +1,7 @@
 package com.rey.job.Entity;
 
 import java.lang.Long;
+import java.math.BigDecimal;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,8 +19,8 @@ public class Job {
     private Long id;
     private String title;
     private String description;
-    private String minSalary;
-    private String maxSalary;
+    private Long minSalary;
+    private Long maxSalary;
     private String location;
     private Long companyId;
 
