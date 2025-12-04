@@ -1,17 +1,18 @@
 package com.rey.review.Interface;
 
-import com.rey.review.DTO.ReviewDTO;
+import com.rey.review.DTO.ReviewRequestDTO;
+import com.rey.review.DTO.ReviewResponseDTO;
 
 import java.util.List;
 
 public interface ServiceInterface {
-    List<ReviewDTO> getAllReviewsByCompanyId(Long companyId);
+    List<ReviewResponseDTO> getAllReviewsByCompanyId(Long companyId);
 
-    String addReview(Long companyId, ReviewDTO reviewDTO);
+    String addReview(Long companyId, ReviewRequestDTO reviewDTO);
 
-    ReviewDTO getReviewById(Long reviewId);
+    ReviewResponseDTO getReviewById(Long reviewId);
 
-    ReviewDTO updateReview(Long reviewId, ReviewDTO review);
+    ReviewResponseDTO updateReview(Long reviewId, ReviewRequestDTO review);
 
     String deleteReview(Long reviewId);
 

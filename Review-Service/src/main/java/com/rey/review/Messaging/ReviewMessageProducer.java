@@ -1,6 +1,5 @@
 package com.rey.review.Messaging;
 
-import com.rey.review.DTO.ReviewDTO;
 import com.rey.review.DTO.ReviewMessage;
 import com.rey.review.Entity.Review;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;

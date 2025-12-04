@@ -1,19 +1,17 @@
 package com.rey.company.ServiceImpl;
 
-import com.rey.company.Clients.JobClient;
 import com.rey.company.Clients.ReviewClient;
-import com.rey.company.DTO.CompanyDTO;
+import com.rey.company.DTO.CompanyRequestDTO;
+import com.rey.company.DTO.CompanyResponseDTO;
 import com.rey.company.DTO.ErrorCodeEnum;
 import com.rey.company.DTO.ReviewMessage;
 
 import com.rey.company.Entity.Company;
 import com.rey.company.Exception.CompanyServiceException;
-import com.rey.company.External.ExternalReview;
 import com.rey.company.Helper.CompanyHelper;
 import com.rey.company.Helper.ExternalClientHelper;
 import com.rey.company.Repository.CompanyRepository;
 import com.rey.company.Service.ServiceInterface;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -35,23 +33,23 @@ public class CompanyServiceImpl implements ServiceInterface {
     private final ExternalClientHelper clientHelper;
 
     @Override
-    public List<CompanyDTO> getAllCompanies() {
+    public List<CompanyResponseDTO> getAllCompanies() {
         log.info("Getting companies fro DB");
 
         List<Company> companies =
                 companyRepo.findAll();
 
         log.info("Gotten companies from db: {}",companies);
-        List<CompanyDTO>  mappedCompanies =
+        List<CompanyResponseDTO>  mappedCompanies =
                 companies.stream().
-                        map(company -> modelMapper.map(company, CompanyDTO.class))
+                        map(company -> modelMapper.map(company, CompanyResponseDTO.class))
                         .toList();
         log.info("Mapped companies to DTO: {}", mappedCompanies);
         return mappedCompanies;
     }
 
     @Override
-    public CompanyDTO updateCompany(Long id, CompanyDTO company) {
+    public CompanyResponseDTO updateCompany(Long id, CompanyRequestDTO company) {
 
         Company existingCompany = companyRepo.findById(id)
                   .orElseThrow(()-> new CompanyServiceException(
@@ -67,15 +65,15 @@ public class CompanyServiceImpl implements ServiceInterface {
         companyRepo.save(existingCompany);
         log.info("Updated Company saved in the DB: {}",existingCompany);
 
-        CompanyDTO mappedCompany =
-                modelMapper.map(company, CompanyDTO.class);
+        CompanyResponseDTO mappedCompany =
+                modelMapper.map(company, CompanyResponseDTO.class);
         log.info("Mapped company Entity into DTO: {}", mappedCompany);
 
         return mappedCompany;
     }
 
     @Override
-    public String createCompany(CompanyDTO company) {
+    public String createCompany(CompanyRequestDTO company) {
         log.info("Received request to crate company");
 
         companyHelper.validateCompanyRequest(company);
@@ -91,7 +89,7 @@ public class CompanyServiceImpl implements ServiceInterface {
     }
 
     @Override
-    public CompanyDTO getCompanyById(Long id) {
+    public CompanyResponseDTO getCompanyById(Long id) {
 
         Company company =
                 companyRepo.findById(id)
@@ -102,8 +100,8 @@ public class CompanyServiceImpl implements ServiceInterface {
                         ));
         log.info("Retrieved company from the DB with id: {}", company.getId());
 
-        CompanyDTO mappedCompany =
-                modelMapper.map(company, CompanyDTO.class);
+        CompanyResponseDTO mappedCompany =
+                modelMapper.map(company, CompanyResponseDTO.class);
         log.info("Mapped company into DTO: {}", mappedCompany);
 
         return mappedCompany;

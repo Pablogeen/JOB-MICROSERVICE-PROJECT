@@ -3,8 +3,8 @@ package com.rey.company.DTO;
 import lombok.Data;
 
 @Data
-public class CompanyDTO {
+public class CompanyRequestDTO {
     private String name;
     private String description;
-    private Double rating;
+
 }

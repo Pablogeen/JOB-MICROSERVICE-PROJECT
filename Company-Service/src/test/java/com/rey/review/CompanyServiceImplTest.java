@@ -1,7 +1,8 @@
 package com.rey.company.ServiceImpl;
 
 import com.rey.company.Clients.ReviewClient;
-import com.rey.company.DTO.CompanyDTO;
+import com.rey.company.DTO.CompanyRequestDTO;
+import com.rey.company.DTO.CompanyResponseDTO;
 import com.rey.company.DTO.ErrorCodeEnum;
 import com.rey.company.DTO.ReviewMessage;
 import com.rey.company.Entity.Company;
@@ -43,7 +44,7 @@ class CompanyServiceImplTest {
     private CompanyHelper companyHelper;
 
     private Company company;
-    private CompanyDTO companyDTO;
+    private CompanyRequestDTO companyDTO;
 
     @BeforeEach
     void setUp() {
@@ -53,18 +54,18 @@ class CompanyServiceImplTest {
         company.setDescription("Test Description");
         company.setRating(4.5);
 
-        companyDTO = new CompanyDTO();
+        companyDTO = new CompanyRequestDTO();
         companyDTO.setName("Test Company");
         companyDTO.setDescription("Test Description");
-        companyDTO.setRating(4.5);
+
     }
 
     @Test
     void testGetAllCompanies() {
         when(companyRepo.findAll()).thenReturn(List.of(company));
-        when(modelMapper.map(company, CompanyDTO.class)).thenReturn(companyDTO);
+        when(modelMapper.map(company, CompanyRequestDTO.class)).thenReturn(companyDTO);
 
-        List<CompanyDTO> result = companyService.getAllCompanies();
+        List<CompanyResponseDTO> result = companyService.getAllCompanies();
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -72,15 +73,15 @@ class CompanyServiceImplTest {
         assertEquals("Test Description", result.get(0).getDescription());
 
         verify(companyRepo, times(1)).findAll();
-        verify(modelMapper, times(1)).map(company, CompanyDTO.class);
+        verify(modelMapper, times(1)).map(company, CompanyRequestDTO.class);
     }
 
     @Test
     void testUpdateCompany_Success() {
         when(companyRepo.findById(1L)).thenReturn(Optional.of(company));
-        when(modelMapper.map(companyDTO, CompanyDTO.class)).thenReturn(companyDTO);
+        when(modelMapper.map(companyDTO, CompanyRequestDTO.class)).thenReturn(companyDTO);
 
-        CompanyDTO result = companyService.updateCompany(1L, companyDTO);
+        CompanyResponseDTO result = companyService.updateCompany(1L, companyDTO);
 
         assertNotNull(result);
         assertEquals("Test Company", result.getName());
@@ -120,9 +121,9 @@ class CompanyServiceImplTest {
     @Test
     void testGetCompanyById_Success() {
         when(companyRepo.findById(1L)).thenReturn(Optional.of(company));
-        when(modelMapper.map(company, CompanyDTO.class)).thenReturn(companyDTO);
+        when(modelMapper.map(company, CompanyRequestDTO.class)).thenReturn(companyDTO);
 
-        CompanyDTO result = companyService.getCompanyById(1L);
+        CompanyRequestDTO result = companyService.getCompanyById(1L);
 
         assertNotNull(result);
         assertEquals("Test Company", result.getName());

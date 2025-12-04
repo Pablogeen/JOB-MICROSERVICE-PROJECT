@@ -1,22 +1,18 @@
 package com.rey.job.Helper;
 
 import com.rey.job.Constants.ErrorCodeEnum;
-import com.rey.job.DTO.JobDTO;
+import com.rey.job.DTO.JobRequestDTO;
 import com.rey.job.Exception.JobExceptionHandler;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Slf4j
 public class CreateJobHelper {
 
 
-    public void validateRequest(JobDTO request) {
+    public void validateRequest(JobRequestDTO request) {
 
         // Title
         if (request.getTitle() == null || request.getTitle().strip().isEmpty()

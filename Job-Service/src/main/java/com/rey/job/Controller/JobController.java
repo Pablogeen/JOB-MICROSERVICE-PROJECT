@@ -1,13 +1,12 @@
 package com.rey.job.Controller;
 
 import com.rey.job.DTO.JobCompanyReviewDTO;
-import com.rey.job.DTO.JobDTO;
+import com.rey.job.DTO.JobRequestDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.rey.job.Entity.Job;
 import com.rey.job.ServiceInterface.JobService;
 
 import java.util.List;
@@ -30,7 +29,7 @@ public class JobController {
     }
 
     @PostMapping
-    public ResponseEntity<String> postJob(@RequestBody JobDTO jobDTO) {
+    public ResponseEntity<String> postJob(@RequestBody JobRequestDTO jobDTO) {
         log.info("Received request to post Job: {}",jobDTO);
         String jobResponse = jobService.createJob(jobDTO);
         log.info("Return response from job posted");
@@ -62,7 +61,8 @@ public class JobController {
     }
 
     @PutMapping("/{id}")
-        public ResponseEntity<String> updateJob(@PathVariable("id") Long id, @RequestBody JobDTO jobDto){
+        public ResponseEntity<String> updateJob(@PathVariable("id") Long id,
+                                                @RequestBody JobRequestDTO jobDto){
         log.info("Updating job with id: {}",id);
         String updatedResponse = jobService.updateJob(id, jobDto);
         log.info("Updated Job: {}",jobDto);

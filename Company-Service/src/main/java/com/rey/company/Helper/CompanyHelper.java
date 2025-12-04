@@ -1,7 +1,7 @@
 package com.rey.company.Helper;
 
 
-import com.rey.company.DTO.CompanyDTO;
+import com.rey.company.DTO.CompanyRequestDTO;
 import com.rey.company.DTO.ErrorCodeEnum;
 import com.rey.company.Exception.CompanyServiceException;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class CompanyHelper {
 
 
-    public void validateCompanyRequest(CompanyDTO company) {
+    public void validateCompanyRequest(CompanyRequestDTO company) {
         log.info("About to validate company request: {}",company);
 
         if (company.getName()== null || company.getName().isBlank() || company.getName().isEmpty()){

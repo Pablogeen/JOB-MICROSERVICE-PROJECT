@@ -1,17 +1,18 @@
 package com.rey.company.Service;
 
-import com.rey.company.DTO.CompanyDTO;
+import com.rey.company.DTO.CompanyRequestDTO;
+import com.rey.company.DTO.CompanyResponseDTO;
 
 import java.util.List;
 
 public interface ServiceInterface {
-    List<CompanyDTO> getAllCompanies();
+    List<CompanyResponseDTO> getAllCompanies();
 
-    CompanyDTO getCompanyById(Long id);
+    CompanyResponseDTO getCompanyById(Long id);
 
-    CompanyDTO updateCompany(Long id, CompanyDTO company);
+    CompanyResponseDTO updateCompany(Long id, CompanyRequestDTO company);
 
-    String createCompany(CompanyDTO company);
+    String createCompany(CompanyRequestDTO company);
 
     String deleteCompany(Long companyId);
 }
