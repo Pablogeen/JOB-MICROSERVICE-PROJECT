@@ -1,6 +1,7 @@
 package com.rey.review.Controller;
 
-import com.rey.review.DTO.ReviewDTO;
+import com.rey.review.DTO.ReviewRequestDTO;
+import com.rey.review.DTO.ReviewResponseDTO;
 import com.rey.review.Interface.ServiceInterface;
 import com.rey.review.Messaging.ReviewMessageProducer;
 import lombok.RequiredArgsConstructor;
@@ -21,16 +22,17 @@ public class ReviewController {
      private ReviewMessageProducer messageProducer;
 
     @GetMapping
-    public ResponseEntity<List<ReviewDTO>> getAllReviews(@RequestParam("companyId") Long companyId){
+    public ResponseEntity<List<ReviewResponseDTO>> getAllReviews(
+            @RequestParam("companyId") Long companyId){
         log.info("About to to make request for all reviews");
-        List<ReviewDTO> reviewDTO = serviceInterface.getAllReviewsByCompanyId(companyId);
+        List<ReviewResponseDTO> reviewDTO = serviceInterface.getAllReviewsByCompanyId(companyId);
         log.info("Request successfully made: {}", reviewDTO);
         return new ResponseEntity<>(reviewDTO, HttpStatus.OK);
     }
 
     @PostMapping("/add-review")
     public ResponseEntity<String> addReview(@RequestParam("companyId") Long companyId,
-                                            @RequestBody ReviewDTO reviewDTO){
+                                            @RequestBody ReviewRequestDTO reviewDTO){
         log.info("Receiving request to add Review with CompanyId: {}||{}", reviewDTO, companyId);
         String response = serviceInterface.addReview(companyId, reviewDTO);
         //messageProducer.sendMessage(reviewDTO);
@@ -40,18 +42,18 @@ public class ReviewController {
     }
 
     @GetMapping("/{reviewId}")
-    public ResponseEntity<ReviewDTO> getReviewById(@PathVariable("reviewId") Long reviewId){
+    public ResponseEntity<ReviewResponseDTO> getReviewById(@PathVariable("reviewId") Long reviewId){
         log.info("Getting review with id: {}",reviewId);
-        ReviewDTO reviewById = serviceInterface.getReviewById(reviewId);
+        ReviewResponseDTO reviewById = serviceInterface.getReviewById(reviewId);
         log.info("Review by Id gotten: {}",reviewById);
         return new ResponseEntity<>(reviewById, HttpStatus.OK);
     }
 
     @PutMapping("/{reviewId}")
-    public ResponseEntity<ReviewDTO> updateReview(@PathVariable("reviewId") Long reviewId,
-                                                  @RequestBody ReviewDTO review){
+    public ResponseEntity<ReviewResponseDTO> updateReview(@PathVariable("reviewId") Long reviewId,
+                                                         @RequestBody ReviewRequestDTO review){
         log.info("About to update review with id and ReviewDTO {}||{}", reviewId, review);
-        ReviewDTO updatedReview = serviceInterface.updateReview(reviewId, review);
+        ReviewResponseDTO updatedReview = serviceInterface.updateReview(reviewId, review);
         return new ResponseEntity<>(updatedReview, HttpStatus.OK);
     }
 

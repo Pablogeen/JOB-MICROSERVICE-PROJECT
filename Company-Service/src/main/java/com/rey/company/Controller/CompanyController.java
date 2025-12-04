@@ -1,6 +1,7 @@
 package com.rey.company.Controller;
 
-import com.rey.company.DTO.CompanyDTO;
+import com.rey.company.DTO.CompanyRequestDTO;
+import com.rey.company.DTO.CompanyResponseDTO;
 import com.rey.company.Service.ServiceInterface;
 import com.rey.company.ServiceImpl.CompanyServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -18,35 +19,35 @@ import java.util.List;
 public class CompanyController {
 
     private final ServiceInterface serviceInterface;
-    private final CompanyServiceImpl service;
+
 
 
     @GetMapping
-    public ResponseEntity<List<CompanyDTO>> getAllCompanies(){
+    public ResponseEntity<List<CompanyResponseDTO>> getAllCompanies(){
         log.info("Retrieving all companies");
-       List<CompanyDTO> companies = serviceInterface.getAllCompanies();
+       List<CompanyResponseDTO> companies = serviceInterface.getAllCompanies();
        log.info("Retrieved all companies: {}", companies);
         return new ResponseEntity<>(companies, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CompanyDTO> getCompanyById(@PathVariable("id") Long id){
+    public ResponseEntity<CompanyResponseDTO> getCompanyById(@PathVariable("id") Long id){
         log.info("Getting company with id: {}", id);
-        CompanyDTO company = serviceInterface.getCompanyById(id);
+        CompanyResponseDTO company = serviceInterface.getCompanyById(id);
         return new ResponseEntity<>(company, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CompanyDTO> updateCompany(@PathVariable("id") Long id,
-                                                    @RequestBody CompanyDTO company){
+    public ResponseEntity<CompanyResponseDTO> updateCompany(@PathVariable("id") Long id,
+                                                           @RequestBody CompanyRequestDTO company){
         log.info("About to update company with id: {}", id);
-        CompanyDTO updatedCompany = serviceInterface.updateCompany(id, company);
+        CompanyResponseDTO updatedCompany = serviceInterface.updateCompany(id, company);
         log.info("Company has been updated: {}", updatedCompany);
         return new ResponseEntity<>(updatedCompany, HttpStatus.OK);
     }
 
     @PostMapping("/add")
-    public ResponseEntity<String> createCompany(@RequestBody CompanyDTO company){
+    public ResponseEntity<String> createCompany(@RequestBody CompanyRequestDTO company){
         log.info("Request to create a company: {}",company);
         String creationResponse = serviceInterface.createCompany(company);
         log.info("Company has been created");

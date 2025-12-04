@@ -1,7 +1,7 @@
 package com.rey.review.ServiceImpl;
 
 import com.rey.review.Constant.ErrorCodeEnum;
-import com.rey.review.DTO.ReviewDTO;
+import com.rey.review.DTO.ReviewRequestDTO;
 import com.rey.review.Entity.Review;
 import com.rey.review.Exception.ReviewExceptionHandler;
 import com.rey.review.Helper.ReviewHelper;
@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,20 +51,20 @@ class ReviewServiceImplTest {
         reviewList.add(review1);
         reviewList.add(review2);
 
-        ReviewDTO dto1 = new ReviewDTO();
-        ReviewDTO dto2 = new ReviewDTO();
+        ReviewRequestDTO dto1 = new ReviewRequestDTO();
+        ReviewRequestDTO dto2 = new ReviewRequestDTO();
 
         when(reviewRepo.findReviewsByCompanyId(companyId))
                 .thenReturn(Optional.of(reviewList));
 
-        when(modelMapper.map(review1, ReviewDTO.class)).thenReturn(dto1);
-        when(modelMapper.map(review2, ReviewDTO.class)).thenReturn(dto2);
+        when(modelMapper.map(review1, ReviewRequestDTO.class)).thenReturn(dto1);
+        when(modelMapper.map(review2, ReviewRequestDTO.class)).thenReturn(dto2);
 
-        List<ReviewDTO> result = reviewService.getAllReviewsByCompanyId(companyId);
+        List<ReviewRequestDTO> result = reviewService.getAllReviewsByCompanyId(companyId);
 
         assertEquals(2, result.size());
         verify(reviewRepo, times(1)).findReviewsByCompanyId(companyId);
-        verify(modelMapper, times(2)).map(any(), eq(ReviewDTO.class));
+        verify(modelMapper, times(2)).map(any(), eq(ReviewRequestDTO.class));
     }
 
     // ===============================================================
@@ -76,7 +75,7 @@ class ReviewServiceImplTest {
     void testAddReview_success() {
         Long companyId = 5L;
 
-        ReviewDTO reviewDTO = new ReviewDTO();
+        ReviewRequestDTO reviewDTO = new ReviewRequestDTO();
         Review mappedReview = new Review();
 
         doNothing().when(reviewHelper).validateRequest(reviewDTO);
@@ -102,16 +101,16 @@ class ReviewServiceImplTest {
         Long reviewId = 10L;
 
         Review review = new Review();
-        ReviewDTO dto = new ReviewDTO();
+        ReviewRequestDTO dto = new ReviewRequestDTO();
 
         when(reviewRepo.findById(reviewId)).thenReturn(Optional.of(review));
-        when(modelMapper.map(review, ReviewDTO.class)).thenReturn(dto);
+        when(modelMapper.map(review, ReviewRequestDTO.class)).thenReturn(dto);
 
-        ReviewDTO result = reviewService.getReviewById(reviewId);
+        ReviewRequestDTO result = reviewService.getReviewById(reviewId);
 
         assertNotNull(result);
         verify(reviewRepo, times(1)).findById(reviewId);
-        verify(modelMapper, times(1)).map(review, ReviewDTO.class);
+        verify(modelMapper, times(1)).map(review, ReviewRequestDTO.class);
     }
 
     @Test
@@ -140,17 +139,17 @@ class ReviewServiceImplTest {
         Review existingReview = new Review();
         existingReview.setId(reviewId);
 
-        ReviewDTO updatedDTO = new ReviewDTO();
+        ReviewRequestDTO updatedDTO = new ReviewRequestDTO();
         updatedDTO.setDescription("Updated Desc");
         updatedDTO.setRating(4.5);
         updatedDTO.setTitle("Updated Title");
 
-        ReviewDTO mappedDTO = new ReviewDTO();
+        ReviewRequestDTO mappedDTO = new ReviewRequestDTO();
 
         when(reviewRepo.findById(reviewId)).thenReturn(Optional.of(existingReview));
-        when(modelMapper.map(existingReview, ReviewDTO.class)).thenReturn(mappedDTO);
+        when(modelMapper.map(existingReview, ReviewRequestDTO.class)).thenReturn(mappedDTO);
 
-        ReviewDTO result = reviewService.updateReview(reviewId, updatedDTO);
+        ReviewRequestDTO result = reviewService.updateReview(reviewId, updatedDTO);
 
         assertNotNull(result);
         assertEquals("Updated Desc", existingReview.getDescription());
@@ -158,13 +157,13 @@ class ReviewServiceImplTest {
         assertEquals("Updated Title", existingReview.getTitle());
 
         verify(reviewRepo, times(1)).save(existingReview);
-        verify(modelMapper, times(1)).map(existingReview, ReviewDTO.class);
+        verify(modelMapper, times(1)).map(existingReview, ReviewRequestDTO.class);
     }
 
     @Test
     void testUpdateReview_notFound() {
         Long reviewId = 50L;
-        ReviewDTO dto = new ReviewDTO();
+        ReviewRequestDTO dto = new ReviewRequestDTO();
 
         when(reviewRepo.findById(reviewId)).thenReturn(Optional.empty());
 

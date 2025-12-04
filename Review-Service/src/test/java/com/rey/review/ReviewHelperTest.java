@@ -1,7 +1,7 @@
 package com.rey.review.Helper;
 
 import com.rey.review.Constant.ErrorCodeEnum;
-import com.rey.review.DTO.ReviewDTO;
+import com.rey.review.DTO.ReviewRequestDTO;
 import com.rey.review.Exception.ReviewExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +21,7 @@ class ReviewHelperTest {
 
     @Test
     void testValidateRequest_descriptionNull() {
-        ReviewDTO dto = new ReviewDTO();
+        ReviewRequestDTO dto = new ReviewRequestDTO();
         dto.setDescription(null);
         dto.setTitle("Good");
         dto.setRating(4.0);
@@ -37,7 +37,7 @@ class ReviewHelperTest {
 
     @Test
     void testValidateRequest_descriptionBlank() {
-        ReviewDTO dto = new ReviewDTO();
+        ReviewRequestDTO dto = new ReviewRequestDTO();
         dto.setDescription("   ");
         dto.setTitle("Good");
         dto.setRating(4.0);
@@ -56,7 +56,7 @@ class ReviewHelperTest {
 
     @Test
     void testValidateRequest_titleNull() {
-        ReviewDTO dto = new ReviewDTO();
+        ReviewRequestDTO dto = new ReviewRequestDTO();
         dto.setDescription("Nice review");
         dto.setTitle(null);
         dto.setRating(4.0);
@@ -73,7 +73,7 @@ class ReviewHelperTest {
 
     @Test
     void testValidateRequest_titleBlank() {
-        ReviewDTO dto = new ReviewDTO();
+        ReviewRequestDTO dto = new ReviewRequestDTO();
         dto.setDescription("Nice review");
         dto.setTitle("   ");
         dto.setRating(4.0);
@@ -92,7 +92,7 @@ class ReviewHelperTest {
 
     @Test
     void testValidateRequest_ratingNull() {
-        ReviewDTO dto = new ReviewDTO();
+        ReviewRequestDTO dto = new ReviewRequestDTO();
         dto.setDescription("desc");
         dto.setTitle("title");
         dto.setRating(null);
@@ -107,7 +107,7 @@ class ReviewHelperTest {
 
     @Test
     void testValidateRequest_ratingLessThanZero() {
-        ReviewDTO dto = new ReviewDTO();
+        ReviewRequestDTO dto = new ReviewRequestDTO();
         dto.setDescription("desc");
         dto.setTitle("title");
         dto.setRating(-1.0);
@@ -122,7 +122,7 @@ class ReviewHelperTest {
 
     @Test
     void testValidateRequest_ratingGreaterThanFive() {
-        ReviewDTO dto = new ReviewDTO();
+        ReviewRequestDTO dto = new ReviewRequestDTO();
         dto.setDescription("desc");
         dto.setTitle("title");
         dto.setRating(6.0);
@@ -141,7 +141,7 @@ class ReviewHelperTest {
 
     @Test
     void testValidateRequest_validRequest() {
-        ReviewDTO dto = new ReviewDTO();
+        ReviewRequestDTO dto = new ReviewRequestDTO();
         dto.setDescription("Good review");
         dto.setTitle("Excellent");
         dto.setRating(4.5);

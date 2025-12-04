@@ -1,7 +1,7 @@
 package com.rey.review.Helper;
 
 import com.rey.review.Constant.ErrorCodeEnum;
-import com.rey.review.DTO.ReviewDTO;
+import com.rey.review.DTO.ReviewRequestDTO;
 import com.rey.review.Exception.ReviewExceptionHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class ReviewHelper {
 
-    public void validateRequest(ReviewDTO reviewDTO) {
+    public void validateRequest(ReviewRequestDTO reviewDTO) {
 
         if(reviewDTO.getDescription() == null || reviewDTO.getDescription().isBlank()){
             log.info("Handling null description");

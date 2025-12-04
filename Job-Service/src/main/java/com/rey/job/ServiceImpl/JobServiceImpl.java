@@ -1,21 +1,17 @@
 package com.rey.job.ServiceImpl;
 
 import com.rey.job.Constants.ErrorCodeEnum;
-import com.rey.job.DTO.JobDTO;
+import com.rey.job.DTO.JobRequestDTO;
 import com.rey.job.Exception.JobExceptionHandler;
 import com.rey.job.Helper.CreateJobHelper;
 import com.rey.job.Helper.ExternalClients;
 import com.rey.job.Util.JsonUtil;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
-import com.rey.job.Client.CompanyClient;
-import com.rey.job.Client.ReviewClient;
 import com.rey.job.DTO.JobCompanyReviewDTO;
 import com.rey.job.Entity.Job;
 import com.rey.job.External.ExternalCompany;
 import com.rey.job.External.ExternalReview;
 import com.rey.job.Mapper.JobMapper;
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -86,7 +82,7 @@ public class JobServiceImpl implements JobService {
 
 //@RateLimiter(name = "companyBreaker")
     @Override
-    public String createJob(JobDTO jobDTO){
+    public String createJob(JobRequestDTO jobDTO){
         log.info("JobDTO received successfully in serviceImpl: {}",jobDTO);
         jobHelper.validateRequest(jobDTO);
         log.info("Validated job request");
@@ -161,7 +157,7 @@ public class JobServiceImpl implements JobService {
 
 
     @Override
-    public String updateJob(Long id, JobDTO jobDto) {
+    public String updateJob(Long id, JobRequestDTO jobDto) {
             Job existingJob = repo.findById(id)
                     .orElseThrow(() -> new JobExceptionHandler(
                             ErrorCodeEnum.JOB_NOT_FOUND.getErrorCode(),

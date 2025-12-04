@@ -18,6 +18,7 @@
         <module>Service-Registery</module>
         <module>Config-Server</module>
         <module>GATEWAY</module>
+
     </modules>
 
     <properties>

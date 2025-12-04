@@ -2,7 +2,8 @@ package com.rey.review.ServiceImpl;
 
 
 import com.rey.review.Constant.ErrorCodeEnum;
-import com.rey.review.DTO.ReviewDTO;
+import com.rey.review.DTO.ReviewRequestDTO;
+import com.rey.review.DTO.ReviewResponseDTO;
 import com.rey.review.Entity.Review;
 import com.rey.review.Exception.ReviewExceptionHandler;
 import com.rey.review.Helper.ReviewHelper;
@@ -27,7 +28,7 @@ public class ReviewServiceImpl implements ServiceInterface {
     private final ReviewHelper reviewHelper;
 
     @Override
-    public List<ReviewDTO> getAllReviewsByCompanyId(Long companyId) {
+    public List<ReviewResponseDTO> getAllReviewsByCompanyId(Long companyId) {
 
         List<Review> reviewsByCompanyId =
                 reviewRepo.findReviewsByCompanyId(companyId)
@@ -37,16 +38,16 @@ public class ReviewServiceImpl implements ServiceInterface {
                                 HttpStatus.NOT_FOUND
                         ));
         log.info("Received reviews from the DB: {}", reviewsByCompanyId);
-        List<ReviewDTO> reviewDTO =
+        List<ReviewResponseDTO> reviewDTO =
                 reviewsByCompanyId.stream()
-                        .map(reviews -> modelMapper.map(reviews, ReviewDTO.class))
+                        .map(reviews -> modelMapper.map(reviews, ReviewResponseDTO.class))
                         .toList();
         log.info("Converted reviews into reviewsDTO: {}", reviewDTO);
         return reviewDTO;
     }
 
     @Override
-    public String addReview(Long companyId, ReviewDTO reviewDTO) {
+    public String addReview(Long companyId, ReviewRequestDTO reviewDTO) {
         //TODO: CHECK IF COMPANY EXIST...
 
         reviewHelper.validateRequest(reviewDTO);
@@ -64,7 +65,7 @@ public class ReviewServiceImpl implements ServiceInterface {
     }
 
     @Override
-    public ReviewDTO getReviewById(Long reviewId) {
+    public ReviewResponseDTO getReviewById(Long reviewId) {
 //        List<Review> reviews = repo.findReviewByCompanyId(companyId);
 //
 //        return reviews.stream()
@@ -77,14 +78,14 @@ public class ReviewServiceImpl implements ServiceInterface {
                   ErrorCodeEnum.REVIEW_NOT_FOUND.getErrorMessage(),
                   HttpStatus.NOT_FOUND
           ));
-    ReviewDTO mappedReview =
-                 modelMapper.map(review, ReviewDTO.class);
+        ReviewResponseDTO mappedReview =
+                 modelMapper.map(review, ReviewResponseDTO.class);
 
     return mappedReview;
    }
 
    @Override
-    public ReviewDTO updateReview( Long reviewId, ReviewDTO review) {
+    public ReviewResponseDTO updateReview(Long reviewId, ReviewRequestDTO review) {
         Review rev = reviewRepo.findById(reviewId)
                 .orElseThrow(()-> new ReviewExceptionHandler(
                         ErrorCodeEnum.REVIEW_NOT_FOUND.getErrorCode(),
@@ -98,8 +99,8 @@ public class ReviewServiceImpl implements ServiceInterface {
 
        reviewRepo.save(rev);
 
-         ReviewDTO updatedRev =
-                 modelMapper.map(rev, ReviewDTO.class);
+       ReviewResponseDTO updatedRev =
+                 modelMapper.map(rev, ReviewResponseDTO.class);
 
             return updatedRev;
     }
