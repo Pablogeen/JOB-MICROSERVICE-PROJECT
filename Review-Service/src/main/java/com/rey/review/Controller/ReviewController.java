@@ -4,6 +4,9 @@ import com.rey.review.DTO.ReviewRequestDTO;
 import com.rey.review.DTO.ReviewResponseDTO;
 import com.rey.review.Interface.ServiceInterface;
 import com.rey.review.Messaging.ReviewMessageProducer;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,11 +19,26 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/reviews")
 @RequiredArgsConstructor
+@Tag(name = "REVIEW")
 public class ReviewController {
 
      private final ServiceInterface serviceInterface;
      private ReviewMessageProducer messageProducer;
 
+    @Operation(
+            description = "Get Endpoint for Review",
+            summary = "This is a summary for Review get endpoint",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Not Found",
+                            responseCode = "404"
+                    )
+            }
+    )
     @GetMapping
     public ResponseEntity<List<ReviewResponseDTO>> getAllReviews(
             @RequestParam("companyId") Long companyId){
@@ -41,8 +59,8 @@ public class ReviewController {
 
     }
 
-    @GetMapping("/{reviewId}")
-    public ResponseEntity<ReviewResponseDTO> getReviewById(@PathVariable("reviewId") Long reviewId){
+                                                          @GetMapping("/{reviewId}")
+                                                          public ResponseEntity<ReviewResponseDTO> getReviewById(@PathVariable("reviewId") Long reviewId){
         log.info("Getting review with id: {}",reviewId);
         ReviewResponseDTO reviewById = serviceInterface.getReviewById(reviewId);
         log.info("Review by Id gotten: {}",reviewById);
@@ -51,7 +69,7 @@ public class ReviewController {
 
     @PutMapping("/{reviewId}")
     public ResponseEntity<ReviewResponseDTO> updateReview(@PathVariable("reviewId") Long reviewId,
-                                                         @RequestBody ReviewRequestDTO review){
+                                                          @RequestBody ReviewRequestDTO review){
         log.info("About to update review with id and ReviewDTO {}||{}", reviewId, review);
         ReviewResponseDTO updatedReview = serviceInterface.updateReview(reviewId, review);
         return new ResponseEntity<>(updatedReview, HttpStatus.OK);

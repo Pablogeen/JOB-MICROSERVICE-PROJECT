@@ -2,6 +2,9 @@ package com.rey.job.Controller;
 
 import com.rey.job.DTO.JobCompanyReviewDTO;
 import com.rey.job.DTO.JobRequestDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,10 +19,24 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/jobs")
 @RequiredArgsConstructor
+@Tag(name = "Job")
 public class JobController {
 
     private final JobService jobService;
-
+    @Operation(
+            description = "Get Endpoint for Job, Company, Review",
+            summary = "This is a summary for Job get endpoint",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Not Found",
+                            responseCode = "404"
+                    )
+            }
+    )
     @GetMapping
     public ResponseEntity<List<JobCompanyReviewDTO>> getAllJobs() {
         log.info("About to make a call for Job, Company and Review");
