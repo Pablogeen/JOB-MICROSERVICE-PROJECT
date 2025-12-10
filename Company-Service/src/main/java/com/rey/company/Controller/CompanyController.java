@@ -3,7 +3,9 @@ package com.rey.company.Controller;
 import com.rey.company.DTO.CompanyRequestDTO;
 import com.rey.company.DTO.CompanyResponseDTO;
 import com.rey.company.Service.ServiceInterface;
-import com.rey.company.ServiceImpl.CompanyServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,12 +18,26 @@ import java.util.List;
 @RequestMapping("/v1/companies")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Company")
 public class CompanyController {
 
     private final ServiceInterface serviceInterface;
 
 
-
+    @Operation(
+            description = "Get Endpoint for Company",
+            summary = "This is a summary for Company get endpoint",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Not Found",
+                            responseCode = "404"
+                    )
+            }
+    )
     @GetMapping
     public ResponseEntity<List<CompanyResponseDTO>> getAllCompanies(){
         log.info("Retrieving all companies");
