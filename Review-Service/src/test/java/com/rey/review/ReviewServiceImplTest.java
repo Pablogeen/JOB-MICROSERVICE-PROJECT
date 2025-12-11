@@ -1,11 +1,12 @@
-package com.rey.review.ServiceImpl;
+package com.rey.review.serviceImpl;
 
-import com.rey.review.Constant.ErrorCodeEnum;
-import com.rey.review.DTO.ReviewRequestDTO;
-import com.rey.review.Entity.Review;
-import com.rey.review.Exception.ReviewExceptionHandler;
-import com.rey.review.Helper.ReviewHelper;
-import com.rey.review.Repository.ReviewRepository;
+import com.rey.review.constant.ErrorCodeEnum;
+import com.rey.review.dto.ReviewRequestDTO;
+import com.rey.review.dto.ReviewResponseDTO;
+import com.rey.review.entity.Review;
+import com.rey.review.exception.ReviewExceptionHandler;
+import com.rey.review.helper.ReviewHelper;
+import com.rey.review.repository.ReviewRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
@@ -54,13 +55,16 @@ class ReviewServiceImplTest {
         ReviewRequestDTO dto1 = new ReviewRequestDTO();
         ReviewRequestDTO dto2 = new ReviewRequestDTO();
 
+        ReviewResponseDTO responseDto1 = new ReviewResponseDTO();
+        ReviewResponseDTO responseDto2 = new ReviewResponseDTO();
+
         when(reviewRepo.findReviewsByCompanyId(companyId))
                 .thenReturn(Optional.of(reviewList));
 
         when(modelMapper.map(review1, ReviewRequestDTO.class)).thenReturn(dto1);
         when(modelMapper.map(review2, ReviewRequestDTO.class)).thenReturn(dto2);
 
-        List<ReviewRequestDTO> result = reviewService.getAllReviewsByCompanyId(companyId);
+        List<ReviewResponseDTO> result = reviewService.getAllReviewsByCompanyId(companyId);
 
         assertEquals(2, result.size());
         verify(reviewRepo, times(1)).findReviewsByCompanyId(companyId);
@@ -106,7 +110,7 @@ class ReviewServiceImplTest {
         when(reviewRepo.findById(reviewId)).thenReturn(Optional.of(review));
         when(modelMapper.map(review, ReviewRequestDTO.class)).thenReturn(dto);
 
-        ReviewRequestDTO result = reviewService.getReviewById(reviewId);
+        ReviewResponseDTO result = reviewService.getReviewById(reviewId);
 
         assertNotNull(result);
         verify(reviewRepo, times(1)).findById(reviewId);
@@ -149,7 +153,7 @@ class ReviewServiceImplTest {
         when(reviewRepo.findById(reviewId)).thenReturn(Optional.of(existingReview));
         when(modelMapper.map(existingReview, ReviewRequestDTO.class)).thenReturn(mappedDTO);
 
-        ReviewRequestDTO result = reviewService.updateReview(reviewId, updatedDTO);
+        ReviewResponseDTO result = reviewService.updateReview(reviewId, updatedDTO);
 
         assertNotNull(result);
         assertEquals("Updated Desc", existingReview.getDescription());
