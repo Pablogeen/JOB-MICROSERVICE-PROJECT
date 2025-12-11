@@ -1,11 +1,11 @@
-package com.rey.review.ServiceImpl;
+package com.rey.review.serviceImpl;
 
-import com.rey.review.Constant.ErrorCodeEnum;
-import com.rey.review.DTO.ReviewRequestDTO;
-import com.rey.review.Entity.Review;
-import com.rey.review.Exception.ReviewExceptionHandler;
-import com.rey.review.Helper.ReviewHelper;
-import com.rey.review.Repository.ReviewRepository;
+import com.rey.review.constant.ErrorCodeEnum;
+import com.rey.review.dto.ReviewRequestDTO;
+import com.rey.review.entity.Review;
+import com.rey.review.exception.ReviewExceptionHandler;
+import com.rey.review.helper.ReviewHelper;
+import com.rey.review.repository.ReviewRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;

@@ -1,8 +1,8 @@
-package com.rey.review.Helper;
+package com.rey.review.helper;
 
-import com.rey.review.Constant.ErrorCodeEnum;
-import com.rey.review.DTO.ReviewRequestDTO;
-import com.rey.review.Exception.ReviewExceptionHandler;
+import com.rey.review.constant.ErrorCodeEnum;
+import com.rey.review.dto.ReviewRequestDTO;
+import com.rey.review.exception.ReviewExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;

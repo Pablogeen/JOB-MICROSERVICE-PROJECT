@@ -1,14 +1,14 @@
-package com.rey.company.ServiceImpl;
+package com.rey.company.serviceImpl;
 
-import com.rey.company.Clients.ReviewClient;
-import com.rey.company.DTO.CompanyRequestDTO;
-import com.rey.company.DTO.CompanyResponseDTO;
-import com.rey.company.DTO.ErrorCodeEnum;
-import com.rey.company.DTO.ReviewMessage;
-import com.rey.company.Entity.Company;
-import com.rey.company.Exception.CompanyServiceException;
-import com.rey.company.Helper.CompanyHelper;
-import com.rey.company.Repository.CompanyRepository;
+import com.rey.company.clients.ReviewClient;
+import com.rey.company.dto.CompanyRequestDTO;
+import com.rey.company.dto.CompanyResponseDTO;
+import com.rey.company.dto.ErrorCodeEnum;
+import com.rey.company.dto.ReviewMessage;
+import com.rey.company.entity.Company;
+import com.rey.company.exception.CompanyServiceException;
+import com.rey.company.helper.CompanyHelper;
+import com.rey.company.repository.CompanyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
