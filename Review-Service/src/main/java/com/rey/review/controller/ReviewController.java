@@ -7,6 +7,7 @@ import com.rey.review.messaging.ReviewMessageProducer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -50,7 +51,7 @@ public class ReviewController {
 
     @PostMapping("/add-review")
     public ResponseEntity<String> addReview(@RequestParam("companyId") Long companyId,
-                                            @RequestBody ReviewRequestDTO reviewDTO){
+                                            @RequestBody @Valid ReviewRequestDTO reviewDTO){
         log.info("Receiving request to add Review with CompanyId: {}||{}", reviewDTO, companyId);
         String response = serviceInterface.addReview(companyId, reviewDTO);
         //messageProducer.sendMessage(reviewDTO);
@@ -59,8 +60,8 @@ public class ReviewController {
 
     }
 
-                                                          @GetMapping("/{reviewId}")
-                                                          public ResponseEntity<ReviewResponseDTO> getReviewById(@PathVariable("reviewId") Long reviewId){
+      @GetMapping("/{reviewId}")
+        public  ResponseEntity<ReviewResponseDTO> getReviewById(@PathVariable("reviewId") Long reviewId){
         log.info("Getting review with id: {}",reviewId);
         ReviewResponseDTO reviewById = serviceInterface.getReviewById(reviewId);
         log.info("Review by Id gotten: {}",reviewById);
@@ -69,7 +70,7 @@ public class ReviewController {
 
     @PutMapping("/{reviewId}")
     public ResponseEntity<ReviewResponseDTO> updateReview(@PathVariable("reviewId") Long reviewId,
-                                                          @RequestBody ReviewRequestDTO review){
+                                                          @RequestBody @Valid ReviewRequestDTO review){
         log.info("About to update review with id and ReviewDTO {}||{}", reviewId, review);
         ReviewResponseDTO updatedReview = serviceInterface.updateReview(reviewId, review);
         return new ResponseEntity<>(updatedReview, HttpStatus.OK);

@@ -6,8 +6,7 @@ import com.rey.company.dto.CompanyResponseDTO;
 import com.rey.company.dto.ErrorCodeEnum;
 import com.rey.company.dto.ReviewMessage;
 import com.rey.company.entity.Company;
-import com.rey.company.exception.CompanyServiceException;
-import com.rey.company.helper.CompanyHelper;
+import com.rey.company.exception.CompanyExceptionHandler;
 import com.rey.company.repository.CompanyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,8 +39,6 @@ class CompanyServiceImplTest {
     @Mock
     private ModelMapper modelMapper;
 
-    @Mock
-    private CompanyHelper companyHelper;
 
     private Company company;
     private CompanyRequestDTO companyDTO;
@@ -97,8 +94,8 @@ class CompanyServiceImplTest {
     void testUpdateCompany_NotFound() {
         when(companyRepo.findById(1L)).thenReturn(Optional.empty());
 
-        CompanyServiceException exception = assertThrows(
-                CompanyServiceException.class,
+        CompanyExceptionHandler exception = assertThrows(
+                CompanyExceptionHandler.class,
                 () -> companyService.updateCompany(1L, companyDTO)
         );
 
@@ -114,7 +111,6 @@ class CompanyServiceImplTest {
 
         assertEquals("COMPANY CREATED SUCCESSFULLY", result);
 
-        verify(companyHelper, times(1)).validateCompanyRequest(companyDTO);
         verify(companyRepo, times(1)).save(company);
     }
 
@@ -123,7 +119,7 @@ class CompanyServiceImplTest {
         when(companyRepo.findById(1L)).thenReturn(Optional.of(company));
         when(modelMapper.map(company, CompanyRequestDTO.class)).thenReturn(companyDTO);
 
-        CompanyRequestDTO result = companyService.getCompanyById(1L);
+        CompanyResponseDTO result = companyService.getCompanyById(1L);
 
         assertNotNull(result);
         assertEquals("Test Company", result.getName());
@@ -134,8 +130,8 @@ class CompanyServiceImplTest {
     void testGetCompanyById_NotFound() {
         when(companyRepo.findById(1L)).thenReturn(Optional.empty());
 
-        CompanyServiceException exception = assertThrows(
-                CompanyServiceException.class,
+        CompanyExceptionHandler exception = assertThrows(
+                CompanyExceptionHandler.class,
                 () -> companyService.getCompanyById(1L)
         );
 
@@ -157,8 +153,8 @@ class CompanyServiceImplTest {
     void testDeleteCompany_NotFound() {
         when(companyRepo.findById(1L)).thenReturn(Optional.empty());
 
-        CompanyServiceException exception = assertThrows(
-                CompanyServiceException.class,
+        CompanyExceptionHandler exception = assertThrows(
+                CompanyExceptionHandler.class,
                 () -> companyService.deleteCompany(1L)
         );
 

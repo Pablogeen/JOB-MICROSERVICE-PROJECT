@@ -3,25 +3,22 @@ package com.rey.job.serviceImpl;
 import com.rey.job.client.CompanyClient;
 import com.rey.job.client.ReviewClient;
 import com.rey.job.constants.ErrorCodeEnum;
+import com.rey.job.dto.JobCompanyReviewDTO;
 import com.rey.job.dto.JobRequestDTO;
+import com.rey.job.entity.Job;
 import com.rey.job.exception.CompanyHandlerException;
 import com.rey.job.exception.JobExceptionHandler;
-import com.rey.job.helper.CreateJobHelper;
-import com.rey.job.util.JsonUtil;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import lombok.RequiredArgsConstructor;
-import com.rey.job.dto.JobCompanyReviewDTO;
-import com.rey.job.entity.Job;
 import com.rey.job.external.ExternalCompany;
 import com.rey.job.external.ExternalReview;
 import com.rey.job.mapper.JobMapper;
+import com.rey.job.repository.JobRepository;
+import com.rey.job.serviceInterface.JobService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import com.rey.job.repository.JobRepository;
-import com.rey.job.serviceInterface.JobService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -33,12 +30,10 @@ import java.util.List;
 public class JobServiceImpl implements JobService {
 
     private final JobRepository repo;
-
     private final ModelMapper modelMapper;
-    private final CreateJobHelper jobHelper;
     private final CompanyClient companyClient;
     private final ReviewClient reviewClient;
-    private final JsonUtil jsonUtil;
+
 
     @Override
     public List<JobCompanyReviewDTO> getAllJobsWithCompanyAndReview() {
@@ -69,8 +64,7 @@ public class JobServiceImpl implements JobService {
     @Override
     public String createJob(JobRequestDTO jobDTO){
         log.info("JobDTO received successfully in serviceImpl: {}",jobDTO);
-        jobHelper.validateRequest(jobDTO);
-        log.info("Validated job request");
+
     Job job =  modelMapper.map(jobDTO, Job.class);
     log.info("JobDTO mapped to JOB: {}",job);
     repo.save(job);
@@ -149,9 +143,6 @@ public class JobServiceImpl implements JobService {
                     ));
             log.info("Got job from the DB: {}",existingJob);
 
-            jobHelper.validateRequest(jobDto);
-            log.info("Validating user request");
-
         existingJob.setTitle(jobDto.getTitle());
         existingJob.setDescription(jobDto.getDescription());
         existingJob.setMaxSalary(jobDto.getMaxSalary());
@@ -173,8 +164,8 @@ public class JobServiceImpl implements JobService {
     }
 
     public void getCompanyFallBack(Long companyId, Throwable throwable) {
-        log.error("CircuitBreaker fallback: Unable to get company for companyId {}. Cause: {}", companyId, throwable.getMessage());
-
+        log.error("CircuitBreaker fallback: Unable to get company for companyId {}. Cause: {}",
+                companyId, throwable.getMessage());
         throw new CompanyHandlerException(
                 ErrorCodeEnum.COMPANY_SERVICE_UNAVAILABLE.getErrorCode(),
                 ErrorCodeEnum.COMPANY_SERVICE_UNAVAILABLE.getErrorMessage(),

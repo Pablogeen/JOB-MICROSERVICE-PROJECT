@@ -5,6 +5,7 @@ import com.rey.job.dto.JobRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -46,7 +47,7 @@ public class JobController {
     }
 
     @PostMapping
-    public ResponseEntity<String> postJob(@RequestBody JobRequestDTO jobDTO) {
+    public ResponseEntity<String> postJob(@RequestBody @Valid JobRequestDTO jobDTO) {
         log.info("Received request to post Job: {}",jobDTO);
         String jobResponse = jobService.createJob(jobDTO);
         log.info("Return response from job posted");
@@ -79,7 +80,7 @@ public class JobController {
 
     @PutMapping("/{id}")
         public ResponseEntity<String> updateJob(@PathVariable("id") Long id,
-                                                @RequestBody JobRequestDTO jobDto){
+                                                @RequestBody @Valid JobRequestDTO jobDto){
         log.info("Updating job with id: {}",id);
         String updatedResponse = jobService.updateJob(id, jobDto);
         log.info("Updated Job: {}",jobDto);

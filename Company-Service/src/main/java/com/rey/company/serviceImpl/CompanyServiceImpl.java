@@ -7,19 +7,18 @@ import com.rey.company.dto.CompanyResponseDTO;
 import com.rey.company.dto.ErrorCodeEnum;
 import com.rey.company.dto.ReviewMessage;
 import com.rey.company.entity.Company;
-import com.rey.company.exception.CompanyServiceException;
+import com.rey.company.exception.CompanyExceptionHandler;
 import com.rey.company.exception.JobExceptionHandler;
-import com.rey.company.exception.ReviewHandlerException;
-import com.rey.company.helper.CompanyHelper;
+import com.rey.company.exception.ReviewExceptionHandler;
 import com.rey.company.repository.CompanyRepository;
 import com.rey.company.service.ServiceInterface;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 import java.util.List;
 
@@ -31,7 +30,6 @@ public class CompanyServiceImpl implements ServiceInterface {
     private final CompanyRepository companyRepo;
     private final ReviewClient reviewClient;
     private final ModelMapper modelMapper;
-    private final CompanyHelper companyHelper;
     private final JobClient jobClient;
 
     @Override
@@ -54,7 +52,7 @@ public class CompanyServiceImpl implements ServiceInterface {
     public CompanyResponseDTO updateCompany(Long id, CompanyRequestDTO company) {
 
         Company existingCompany = companyRepo.findById(id)
-                .orElseThrow(() -> new CompanyServiceException(
+                .orElseThrow(() -> new CompanyExceptionHandler(
                         ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorCode(),
                         ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorMessage(),
                         HttpStatus.NOT_FOUND
@@ -78,13 +76,22 @@ public class CompanyServiceImpl implements ServiceInterface {
     public String createCompany(CompanyRequestDTO company) {
         log.info("Received request to crate company");
 
-        companyHelper.validateCompanyRequest(company);
-        log.info("Validated company request");
+
 
         Company mappedCompany =
                 modelMapper.map(company, Company.class);
         log.info("Mapped company DTO into ENTITY: {}", mappedCompany);
 
+       boolean companyExist = companyRepo.findByCompanyName(mappedCompany.getName());
+       log.info("Check if company exist: {}: ",companyExist);
+
+       if (companyExist){
+           throw new CompanyExceptionHandler(
+                   ErrorCodeEnum.COMPANY_ALREADY_EXIST.getErrorCode(),
+                   ErrorCodeEnum.COMPANY_ALREADY_EXIST.getErrorMessage(),
+                   HttpStatus.CONFLICT
+           );
+       }
         companyRepo.save(mappedCompany);
 
         return "COMPANY CREATED SUCCESSFULLY";
@@ -95,7 +102,7 @@ public class CompanyServiceImpl implements ServiceInterface {
 
         Company company =
                 companyRepo.findById(id)
-                        .orElseThrow(() -> new CompanyServiceException(
+                        .orElseThrow(() -> new CompanyExceptionHandler(
                                 ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorCode(),
                                 ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorMessage(),
                                 HttpStatus.NOT_FOUND
@@ -123,7 +130,7 @@ public class CompanyServiceImpl implements ServiceInterface {
         log.info("Jobs deleted with companyId: {}", companyId);
 
         Company existingCompany = companyRepo.findById(companyId)
-                .orElseThrow(() -> new CompanyServiceException(
+                .orElseThrow(() -> new CompanyExceptionHandler(
                         ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorCode(),
                         ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorMessage(),
                         HttpStatus.NOT_FOUND
@@ -142,7 +149,7 @@ public class CompanyServiceImpl implements ServiceInterface {
         log.info("Updating the rating of company with id: {}", reviewMessage.getCompanyId());
 
         Company existingCompany = companyRepo.findById(reviewMessage.getCompanyId())
-                .orElseThrow(() -> new CompanyServiceException(
+                .orElseThrow(() -> new CompanyExceptionHandler(
                         ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorCode(),
                         ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorMessage(),
                         HttpStatus.NOT_FOUND
@@ -162,7 +169,7 @@ public class CompanyServiceImpl implements ServiceInterface {
         log.error("CircuitBreaker fallback: Unable to update rating for companyId {}. Cause: {}",
                 reviewMessage.getCompanyId(), throwable.getMessage());
 
-        throw new CompanyServiceException(
+        throw new CompanyExceptionHandler(
                 ErrorCodeEnum.REVIEW_SERVICE_UNAVAILABLE.getErrorCode(),
                 ErrorCodeEnum.REVIEW_SERVICE_UNAVAILABLE.getErrorMessage(),
                 HttpStatus.SERVICE_UNAVAILABLE
@@ -179,7 +186,7 @@ public class CompanyServiceImpl implements ServiceInterface {
     // Fallback method for reviewClient CircuitBreaker
     public void deleteReviewsFallback(Long companyId, Throwable throwable) {
         log.error("CircuitBreaker fallback: Unable to delete reviews for companyId {}. Cause: {}", companyId, throwable.getMessage());
-        throw new ReviewHandlerException(
+        throw new ReviewExceptionHandler(
                 ErrorCodeEnum.REVIEW_SERVICE_UNAVAILABLE.getErrorCode(),
                 ErrorCodeEnum.REVIEW_SERVICE_UNAVAILABLE.getErrorMessage(),
                 HttpStatus.SERVICE_UNAVAILABLE
