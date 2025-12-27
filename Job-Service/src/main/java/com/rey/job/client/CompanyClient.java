@@ -14,7 +14,7 @@ public interface CompanyClient {
 
 
         @GetMapping("/v1/companies/{id}")
-        ResponseEntity<ExternalCompany> getCompany (@PathVariable("id") Long id);
+        ExternalCompany getCompany (@PathVariable("id") Long id);
 
 
 

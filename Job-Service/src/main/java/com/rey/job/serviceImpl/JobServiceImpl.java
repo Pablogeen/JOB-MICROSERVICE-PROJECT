@@ -1,11 +1,14 @@
 package com.rey.job.serviceImpl;
 
+import com.rey.job.client.CompanyClient;
+import com.rey.job.client.ReviewClient;
 import com.rey.job.constants.ErrorCodeEnum;
 import com.rey.job.dto.JobRequestDTO;
+import com.rey.job.exception.CompanyHandlerException;
 import com.rey.job.exception.JobExceptionHandler;
 import com.rey.job.helper.CreateJobHelper;
-import com.rey.job.helper.ExternalClients;
 import com.rey.job.util.JsonUtil;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import com.rey.job.dto.JobCompanyReviewDTO;
 import com.rey.job.entity.Job;
@@ -33,7 +36,8 @@ public class JobServiceImpl implements JobService {
 
     private final ModelMapper modelMapper;
     private final CreateJobHelper jobHelper;
-    private final ExternalClients externalClients;
+    private final CompanyClient companyClient;
+    private final ReviewClient reviewClient;
     private final JsonUtil jsonUtil;
 
     @Override
@@ -43,39 +47,20 @@ public class JobServiceImpl implements JobService {
         for (Job job: jobs){
             log.info("Job with company id: {}",job.getCompanyId());
 
-          ResponseEntity<ExternalCompany> company =
-                  externalClients.makeCompanyCall(job);
+          ExternalCompany company = getCompanyCB(job.getCompanyId());
           log.info("Made company request from Company Service: {}",company);
 
-            ExternalCompany externalCompany = company.getBody();
-
-
-
-            ResponseEntity<List<ExternalReview>> reviews =
-                    externalClients.makeReviewCall(job);
+            List<ExternalReview> reviews = getReviewsCB(job.getCompanyId());
             log.info("Made Review request from Review Service: {}",reviews);
 
-            List<ExternalReview> externalReview = reviews.getBody();
-
             JobCompanyReviewDTO jobDTO =
-                    JobMapper.mapToJobWithCompanyDto(job, externalCompany, externalReview);
+                    JobMapper.mapToJobWithCompanyDto(job, company, reviews);
 
             dto.add(jobDTO);
         }
         return dto;
     }
 
-
-  //@Retry(name="companyBreaker", fallbackMethod = "companyBreakerFallback")
-  //  @RateLimiter(name="companyBreaker")
-
-
-//FallBack
-//    public List<String> companyBreakerFallback(Exception e){
-//        List<String> list = new ArrayList<>();
-//        list.add("Ooops!! Something went wrong...");
-//        return list;
-//    }
 
 
 
@@ -104,20 +89,18 @@ public class JobServiceImpl implements JobService {
                         ));
         log.info("Fetching job from the db: {}",job);
 
-        ResponseEntity<ExternalCompany> company
-                = externalClients.makeCompanyCall(job);
+        ExternalCompany company  =
+                         getCompanyCB(job.getCompanyId());
         log.info("Making company request from Company Service: {}",company);
 
-        ExternalCompany convertedCompany = company.getBody();
 
-     ResponseEntity<List<ExternalReview>> reviews =
-             externalClients.makeReviewCall(job);
+     List<ExternalReview> reviews =
+             getReviewsCB(job.getCompanyId());
         log.info("Making review request from Review Service: {}",reviews);
 
-        List<ExternalReview> convertedReview = reviews.getBody();
 
         JobCompanyReviewDTO jobDTO =
-                JobMapper.mapToJobWithCompanyDto(job, convertedCompany, convertedReview);
+                JobMapper.mapToJobWithCompanyDto(job, company, reviews);
         log.info("Mapped job, company and convertedReview: {}",jobDTO);
 
         return jobDTO;
@@ -179,7 +162,36 @@ public class JobServiceImpl implements JobService {
 
     }
 
+    @CircuitBreaker(name = "getCompanyCB", fallbackMethod = "getCompanyFallBack")
+    public ExternalCompany getCompanyCB(Long companyId){
+        return companyClient.getCompany(companyId);
+    }
 
+    @CircuitBreaker(name = "getCompanyCB", fallbackMethod = "getReviewFallBack")
+    public List<ExternalReview> getReviewsCB(Long companyId){
+        return reviewClient.getAllReviews(companyId);
+    }
+
+    public void getCompanyFallBack(Long companyId, Throwable throwable) {
+        log.error("CircuitBreaker fallback: Unable to get company for companyId {}. Cause: {}", companyId, throwable.getMessage());
+
+        throw new CompanyHandlerException(
+                ErrorCodeEnum.COMPANY_SERVICE_UNAVAILABLE.getErrorCode(),
+                ErrorCodeEnum.COMPANY_SERVICE_UNAVAILABLE.getErrorMessage(),
+                HttpStatus.SERVICE_UNAVAILABLE
+        );
+    }
+
+    public void getReviewsFallBack(Long companyId, Throwable throwable) {
+        log.error("CircuitBreaker fallback: Unable to get reviews for companyId {}. Cause: {}", companyId, throwable.getMessage());
+
+        throw new CompanyHandlerException(
+                ErrorCodeEnum.REVIEW_SERVICE_UNAVAILABLE.getErrorCode(),
+                ErrorCodeEnum.REVIEW_SERVICE_UNAVAILABLE.getErrorMessage(),
+                HttpStatus.SERVICE_UNAVAILABLE
+        );
+
+    }
 
 }
 

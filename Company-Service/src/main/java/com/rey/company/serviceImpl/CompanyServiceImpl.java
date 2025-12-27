@@ -1,15 +1,16 @@
 package com.rey.company.serviceImpl;
 
+import com.rey.company.clients.JobClient;
 import com.rey.company.clients.ReviewClient;
 import com.rey.company.dto.CompanyRequestDTO;
 import com.rey.company.dto.CompanyResponseDTO;
 import com.rey.company.dto.ErrorCodeEnum;
 import com.rey.company.dto.ReviewMessage;
-
 import com.rey.company.entity.Company;
 import com.rey.company.exception.CompanyServiceException;
+import com.rey.company.exception.JobExceptionHandler;
+import com.rey.company.exception.ReviewHandlerException;
 import com.rey.company.helper.CompanyHelper;
-import com.rey.company.helper.ExternalClientHelper;
 import com.rey.company.repository.CompanyRepository;
 import com.rey.company.service.ServiceInterface;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 import java.util.List;
 
@@ -30,7 +32,7 @@ public class CompanyServiceImpl implements ServiceInterface {
     private final ReviewClient reviewClient;
     private final ModelMapper modelMapper;
     private final CompanyHelper companyHelper;
-    private final ExternalClientHelper clientHelper;
+    private final JobClient jobClient;
 
     @Override
     public List<CompanyResponseDTO> getAllCompanies() {
@@ -39,8 +41,8 @@ public class CompanyServiceImpl implements ServiceInterface {
         List<Company> companies =
                 companyRepo.findAll();
 
-        log.info("Gotten companies from db: {}",companies);
-        List<CompanyResponseDTO>  mappedCompanies =
+        log.info("Gotten companies from db: {}", companies);
+        List<CompanyResponseDTO> mappedCompanies =
                 companies.stream().
                         map(company -> modelMapper.map(company, CompanyResponseDTO.class))
                         .toList();
@@ -52,18 +54,18 @@ public class CompanyServiceImpl implements ServiceInterface {
     public CompanyResponseDTO updateCompany(Long id, CompanyRequestDTO company) {
 
         Company existingCompany = companyRepo.findById(id)
-                  .orElseThrow(()-> new CompanyServiceException(
-                ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorCode(),
-                ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorMessage(),
-                HttpStatus.NOT_FOUND
-        ));
+                .orElseThrow(() -> new CompanyServiceException(
+                        ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorCode(),
+                        ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorMessage(),
+                        HttpStatus.NOT_FOUND
+                ));
 
         log.info("Retrieved company from the DB : {}", existingCompany);
         existingCompany.setName(company.getName());
         existingCompany.setDescription(company.getDescription());
 
         companyRepo.save(existingCompany);
-        log.info("Updated Company saved in the DB: {}",existingCompany);
+        log.info("Updated Company saved in the DB: {}", existingCompany);
 
         CompanyResponseDTO mappedCompany =
                 modelMapper.map(company, CompanyResponseDTO.class);
@@ -93,7 +95,7 @@ public class CompanyServiceImpl implements ServiceInterface {
 
         Company company =
                 companyRepo.findById(id)
-                        .orElseThrow(()-> new CompanyServiceException(
+                        .orElseThrow(() -> new CompanyServiceException(
                                 ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorCode(),
                                 ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorMessage(),
                                 HttpStatus.NOT_FOUND
@@ -110,16 +112,18 @@ public class CompanyServiceImpl implements ServiceInterface {
     @Override
     @Transactional
     public String deleteCompany(Long companyId) {
-        log.info("About to make call to delete reviews with companyId: {}",companyId);
-        clientHelper.makeDeleteReviewCall(companyId);
-        log.info("Reviews deleted with companyId: {}",companyId);
+        log.info("About to make call to delete reviews with companyId: {}", companyId);
 
-        log.info("About to make call to delete Job with companyId: {}",companyId);
-        clientHelper.makeDeleteJobsCall(companyId);
-        log.info("Jobs deleted with companyId: {}",companyId);
+        deleteReviewsWithCircuitBreaker(companyId);
+        log.info("Reviews deleted with companyId: {}", companyId);
+
+        log.info("About to make call to delete Job with companyId: {}", companyId);
+
+        deleteJobsWithCircuitBreaker(companyId);
+        log.info("Jobs deleted with companyId: {}", companyId);
 
         Company existingCompany = companyRepo.findById(companyId)
-                .orElseThrow(()-> new CompanyServiceException(
+                .orElseThrow(() -> new CompanyServiceException(
                         ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorCode(),
                         ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorMessage(),
                         HttpStatus.NOT_FOUND
@@ -129,24 +133,70 @@ public class CompanyServiceImpl implements ServiceInterface {
 
         companyRepo.delete(existingCompany);
         log.info("Deleted successfully");
-        return  "COMPANY DELETED SUCCESSFULLY";
+
+        return "COMPANY DELETED SUCCESSFULLY";
     }
 
-    public void updateCompanyRating(ReviewMessage reviewMessage){
-        log.info("Updating the rating of company with id: {}",reviewMessage.getId());
+    @CircuitBreaker(name = "UpdateCompanyRatingCB", fallbackMethod = "updateCompanyRatingFallback")
+    public void updateCompanyRating(ReviewMessage reviewMessage) {
+        log.info("Updating the rating of company with id: {}", reviewMessage.getCompanyId());
+
         Company existingCompany = companyRepo.findById(reviewMessage.getCompanyId())
-                .orElseThrow(()-> new CompanyServiceException(
+                .orElseThrow(() -> new CompanyServiceException(
                         ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorCode(),
                         ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorMessage(),
                         HttpStatus.NOT_FOUND
                 ));
-        log.info("Gotten company with id: {}",existingCompany.getId());
 
-            double averageRating = reviewClient.getAverageRating(reviewMessage.getCompanyId());
-            log.info("Made a feign call to Reviews to update Rating: {}",averageRating);
+        log.info("Gotten company with id: {}", existingCompany.getId());
+
+        double averageRating = reviewClient.getAverageRating(reviewMessage.getCompanyId());
+        log.info("Made a feign call to Reviews to update Rating: {}", averageRating);
+
         existingCompany.setRating(averageRating);
+        companyRepo.save(existingCompany);
+        log.info("Saved rating into the DB: {}", existingCompany.getRating());
+    }
 
-            companyRepo.save(existingCompany);
-            log.info("Saved rating into the DB: {}",existingCompany.getRating());
+    public void updateCompanyRatingFallback(ReviewMessage reviewMessage, Throwable throwable) {
+        log.error("CircuitBreaker fallback: Unable to update rating for companyId {}. Cause: {}",
+                reviewMessage.getCompanyId(), throwable.getMessage());
+
+        throw new CompanyServiceException(
+                ErrorCodeEnum.REVIEW_SERVICE_UNAVAILABLE.getErrorCode(),
+                ErrorCodeEnum.REVIEW_SERVICE_UNAVAILABLE.getErrorMessage(),
+                HttpStatus.SERVICE_UNAVAILABLE
+        );
+    }
+
+
+
+    @CircuitBreaker(name = "reviewServiceCB", fallbackMethod = "deleteReviewsFallback")
+    public void deleteReviewsWithCircuitBreaker(Long companyId) {
+        reviewClient.deleteReviewsByCompanyId(companyId);
+    }
+
+    // Fallback method for reviewClient CircuitBreaker
+    public void deleteReviewsFallback(Long companyId, Throwable throwable) {
+        log.error("CircuitBreaker fallback: Unable to delete reviews for companyId {}. Cause: {}", companyId, throwable.getMessage());
+        throw new ReviewHandlerException(
+                ErrorCodeEnum.REVIEW_SERVICE_UNAVAILABLE.getErrorCode(),
+                ErrorCodeEnum.REVIEW_SERVICE_UNAVAILABLE.getErrorMessage(),
+                HttpStatus.SERVICE_UNAVAILABLE
+        );
+    }
+
+    @CircuitBreaker(name = "jobServiceCB", fallbackMethod = "deleteJobsFallback")
+    public void deleteJobsWithCircuitBreaker(Long companyId) {
+        jobClient.deleteJobsByCompanyId(companyId);
+    }
+
+    public void deleteJobsFallback(Long companyId, Throwable throwable) {
+        log.error("CircuitBreaker fallback: Unable to delete jobs for companyId {}. Cause: {}", companyId, throwable.getMessage());
+        throw new JobExceptionHandler(
+                ErrorCodeEnum.JOB_SERVICE_UNAVAILABLE.getErrorCode(),
+                ErrorCodeEnum.JOB_SERVICE_UNAVAILABLE.getErrorMessage(),
+                HttpStatus.SERVICE_UNAVAILABLE
+        );
     }
 }
