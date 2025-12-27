@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ErrorCodeEnum {
 
-    INVALID_REQUEST("2000","Invalid Request"),
+    INVALID_REQUEST("20000","Invalid Request"),
     INVALID_RATING("20001","Invalid Rating"),
     GENERIC_ERROR("20002","Ooopppss something went wrong"),
     REVIEW_NOT_FOUND("20003","Review not found");

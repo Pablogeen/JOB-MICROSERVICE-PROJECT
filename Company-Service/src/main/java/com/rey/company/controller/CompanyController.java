@@ -6,6 +6,7 @@ import com.rey.company.service.ServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -55,7 +56,7 @@ public class CompanyController {
 
     @PutMapping("/{id}")
     public ResponseEntity<CompanyResponseDTO> updateCompany(@PathVariable("id") Long id,
-                                                           @RequestBody CompanyRequestDTO company){
+                                                           @RequestBody @Valid CompanyRequestDTO company){
         log.info("About to update company with id: {}", id);
         CompanyResponseDTO updatedCompany = serviceInterface.updateCompany(id, company);
         log.info("Company has been updated: {}", updatedCompany);
@@ -63,7 +64,7 @@ public class CompanyController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<String> createCompany(@RequestBody CompanyRequestDTO company){
+    public ResponseEntity<String> createCompany(@RequestBody @Valid CompanyRequestDTO company){
         log.info("Request to create a company: {}",company);
         String creationResponse = serviceInterface.createCompany(company);
         log.info("Company has been created");

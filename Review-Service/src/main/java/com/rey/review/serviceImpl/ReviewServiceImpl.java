@@ -6,9 +6,8 @@ import com.rey.review.dto.ReviewRequestDTO;
 import com.rey.review.dto.ReviewResponseDTO;
 import com.rey.review.entity.Review;
 import com.rey.review.exception.ReviewExceptionHandler;
-import com.rey.review.helper.ReviewHelper;
-import com.rey.review.serviceInterface.ServiceInterface;
 import com.rey.review.repository.ReviewRepository;
+import com.rey.review.serviceInterface.ServiceInterface;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -25,7 +24,6 @@ public class ReviewServiceImpl implements ServiceInterface {
 
     private final ReviewRepository reviewRepo;
     private final ModelMapper modelMapper;
-    private final ReviewHelper reviewHelper;
 
     @Override
     public List<ReviewResponseDTO> getAllReviewsByCompanyId(Long companyId) {
@@ -48,14 +46,13 @@ public class ReviewServiceImpl implements ServiceInterface {
 
     @Override
     public String addReview(Long companyId, ReviewRequestDTO reviewDTO) {
-        //TODO: CHECK IF COMPANY EXIST...
-
-        reviewHelper.validateRequest(reviewDTO);
-        log.info("Validates users input");
 
         Review review =
                 modelMapper.map(reviewDTO, Review.class);
         log.info("Converted reviewDTO to Review for inserting into DB: {}", review);
+
+        //TODO: CHECK IF COMPANY EXIST...
+
 
         review.setCompanyId(companyId);
         reviewRepo.save(review);
@@ -66,12 +63,7 @@ public class ReviewServiceImpl implements ServiceInterface {
 
     @Override
     public ReviewResponseDTO getReviewById(Long reviewId) {
-//        List<Review> reviews = repo.findReviewByCompanyId(companyId);
-//
-//        return reviews.stream()
-//                .filter(review -> review.getId().equals(reviewId))
-//                .findFirst()
-//                .orElseThrow(() -> new IllegalStateException("REVIEW NOT FOUND"));
+
   Review review = reviewRepo.findById(reviewId)
           .orElseThrow(()-> new ReviewExceptionHandler(
                   ErrorCodeEnum.REVIEW_NOT_FOUND.getErrorCode(),
@@ -124,7 +116,6 @@ public class ReviewServiceImpl implements ServiceInterface {
     @Transactional
     public String deleteReviewsByCompanyId(Long companyId) {
 
-        List<Review> review =
                 reviewRepo.findReviewsByCompanyId(companyId)
                         .orElseThrow(() -> new ReviewExceptionHandler(
                                 ErrorCodeEnum.REVIEW_NOT_FOUND.getErrorCode(),
@@ -157,7 +148,6 @@ public class ReviewServiceImpl implements ServiceInterface {
                         HttpStatus.NOT_FOUND
                 ));
     }
-
 
 
 
