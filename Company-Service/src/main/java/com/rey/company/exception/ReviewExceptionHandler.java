@@ -7,9 +7,9 @@ import org.springframework.http.HttpStatus;
 public class ReviewExceptionHandler extends RuntimeException {
 
 
-    private String errorCode;
-    private String errorMessage;
-    private HttpStatus status;
+    private final String errorCode;
+    private final String errorMessage;
+    private final HttpStatus status;
 
     public ReviewExceptionHandler(String errorCode, String errorMessage, HttpStatus status) {
         super(errorMessage);

@@ -6,9 +6,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 public class CompanyExceptionHandler extends RuntimeException{
 
-    private String errorCode;
-    private String errorMessage;
-    private HttpStatus httpStatus;
+    private final String errorCode;
+    private final String errorMessage;
+    private final HttpStatus httpStatus;
 
     public CompanyExceptionHandler(String errorCode, String errorMessage, HttpStatus httpStatus) {
         super(errorMessage);

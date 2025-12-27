@@ -14,8 +14,8 @@ public enum ErrorCodeEnum {
     COMPANY_ALREADY_EXIST("30006", "Company Already Exist"),
     GENERIC_ERROR("30007","Oops, Something went wrong...");
 
-    private String errorCode;
-    private String errorMessage;
+    private final String errorCode;
+    private final String errorMessage;
 
 
     ErrorCodeEnum(String errorCode, String errorMessage) {
