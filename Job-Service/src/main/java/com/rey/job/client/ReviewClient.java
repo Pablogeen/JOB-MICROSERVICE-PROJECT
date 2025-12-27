@@ -13,6 +13,6 @@ import java.util.List;
 public interface ReviewClient {
 
     @GetMapping("/v1/reviews")
-    ResponseEntity<List<ExternalReview>> getAllReviews(@RequestParam("companyId") Long companyId);
+    List<ExternalReview> getAllReviews(@RequestParam("companyId") Long companyId);
 
 }
