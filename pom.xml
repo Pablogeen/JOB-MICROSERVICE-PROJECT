@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.REY</groupId>
-  <artifactId>MyMicroservices</artifactId>
-  <version>1.0-SNAPSHOT</version>
+    <groupId>com.REY</groupId>
+    <artifactId>MyMicroservices</artifactId>
+    <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>MyMicroservices</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.benadco.com</url>
+    <url>http://www.benadco.com</url>
     <modules>
         <module>Job-Service</module>
         <module>Company-Service</module>
@@ -18,16 +17,21 @@
         <module>Service-Registery</module>
         <module>Config-Server</module>
         <module>GATEWAY</module>
-
+        <module>User-Service</module>
+        <module>Notification-Service</module>
     </modules>
 
     <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.release>17</maven.compiler.release>
-      <spring.boot.maven.plugin.version>3.5.4</spring.boot.maven.plugin.version>
-      <spring.boot.maven.dependencies.version>3.5.4</spring.boot.maven.dependencies.version>
-      <spring-cloud.version>2025.0.0</spring-cloud.version>
-  </properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>17</maven.compiler.release>
+        <spring.boot.maven.plugin.version>3.4.2</spring.boot.maven.plugin.version>
+        <spring.boot.maven.dependencies.version>3.4.2</spring.boot.maven.dependencies.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
+
+        <!-- Override vulnerable test dependencies -->
+        <spring.framework.version>6.2.2</spring.framework.version>
+        <logback.version>1.5.19</logback.version>
+    </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -47,6 +51,31 @@
                 <scope>import</scope>
             </dependency>
 
+
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring.framework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-test</artifactId>
+                <version>${spring.framework.version}</version>
+            </dependency>
+
+            <!-- Fix CVE-2025-11226: Logback (used by spring-boot-starter-test) -->
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -55,6 +84,8 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
+
+        <!-- Test dependencies with scope=test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -63,7 +94,7 @@
 
     <build>
         <finalName>my-microservices</finalName>
-        <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+        <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
@@ -71,7 +102,6 @@
                     <version>${spring.boot.maven.plugin.version}</version>
                 </plugin>
             </plugins>
-
         </pluginManagement>
     </build>
 </project>
