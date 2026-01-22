@@ -36,12 +36,10 @@ public class CompanyServiceImpl implements ServiceInterface {
     public List<CompanyResponseDTO> getAllCompanies() {
         log.info("Getting companies fro DB");
 
-        List<Company> companies =
-                companyRepo.findAll();
-
+        List<Company> companies = companyRepo.findAll();
         log.info("Gotten companies from db: {}", companies);
-        List<CompanyResponseDTO> mappedCompanies =
-                companies.stream().
+
+        List<CompanyResponseDTO> mappedCompanies = companies.stream().
                         map(company -> modelMapper.map(company, CompanyResponseDTO.class))
                         .toList();
         log.info("Mapped companies to DTO: {}", mappedCompanies);
@@ -100,8 +98,7 @@ public class CompanyServiceImpl implements ServiceInterface {
     @Override
     public CompanyResponseDTO getCompanyById(Long id) {
 
-        Company company =
-                companyRepo.findById(id)
+        Company company = companyRepo.findById(id)
                         .orElseThrow(() -> new CompanyExceptionHandler(
                                 ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorCode(),
                                 ErrorCodeEnum.COMPANY_NOT_FOUND.getErrorMessage(),

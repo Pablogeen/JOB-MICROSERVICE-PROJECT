@@ -1,11 +1,10 @@
-package com.rey.company.exception;
+package com.rey.userService.exception;
 
-import com.rey.company.dto.ErrorCodeEnum;
-import com.rey.company.dto.ErrorResponse;
+import com.rey.userService.dto.ErrorCodeEnum;
+import com.rey.userService.dto.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,12 +16,12 @@ import java.util.Optional;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(CompanyExceptionHandler.class)
-    public ResponseEntity<ErrorResponse> handleCompanyException(CompanyExceptionHandler ex) {
+    @ExceptionHandler(UserExceptionHandler.class)
+    public ResponseEntity<ErrorResponse> handleCompanyException(UserExceptionHandler ex) {
         log.error("About to throw custom exception");
         ErrorResponse errorResponse = new ErrorResponse(
                 ex.getErrorCode(), ex.getErrorMessage());
-        return new ResponseEntity<>(errorResponse, ex.getHttpStatus());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
     }
 
 
