@@ -40,7 +40,4 @@ public class UserRequestDto {
     @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters")
     private String confirmPassword;
 
-    @Size(max = 500, message = "Profile picture URL must be at most 500 characters")
-    private String profilePictureUrl;
-
 }
